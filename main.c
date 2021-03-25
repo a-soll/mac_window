@@ -1,4 +1,4 @@
-#include "precompiled.h"
+#include "include/ns_types.h"
 #include <objc/message.h>
 #include <objc/runtime.h>
 #include <stdio.h>
@@ -22,12 +22,12 @@ int main() {
     NSRunningApplication app;
     nsrunningapp_init(&app);
 
-    for (unsigned long i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         NSString p_name;
         nsstr_init(&p_name);
 
         SEL index = sel_registerName("objectAtIndex:");
-        app.id = ((id(*)(id, SEL, unsigned long))objc_msgSend)(apps.id, index, i);
+        app.id = ((id(*)(id, SEL, int))objc_msgSend)(apps.id, index, i);
 
         SEL proc_ids = sel_registerName("processIdentifier");
         pid_t pid = ((pid_t(*)(id, SEL))objc_msgSend)(app.id, proc_ids);

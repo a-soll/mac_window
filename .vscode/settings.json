@@ -4,6 +4,6 @@
         "cstring": "c"
     },
     "code-runner.executorMapByGlob": {
-        "*.c|*.h": "cd $workspaceRoot && clang -o $workspaceRoot/a.out $workspaceRoot/main.c $workspaceRoot/types/nsstring.c $workspaceRoot/types/nsarray.c $workspaceRoot/types/nsrunningapp.c $workspaceRoot/types/nsworkspace.c -framework AppKit && $workspaceRoot/a.out"
+        "*.c|*.h": "cd $workspaceRoot && clang -o $workspaceRoot/a.out $workspaceRoot/main.c $workspaceRoot/ns_types.c -framework AppKit && $workspaceRoot/a.out"
     }
 }
