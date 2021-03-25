@@ -1,0 +1,4 @@
+*.dSYM
+*.m
+a.out
+document.c

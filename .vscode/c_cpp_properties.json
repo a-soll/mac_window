@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "mac",
+            "intelliSenseMode": "macos-clang-x64",
+            "cStandard": "gnu17",
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/Library/Frameworks"
+            ],
+            "includePath": [
+                "/usr/local/include",
+                "/System/Library/Frameworks"
+            ],
+            "browse": {
+                "path": [
+                    "/System/Library/Frameworks"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}
