@@ -1,15 +1,10 @@
-#include <objc/message.h>
 #include <objc/runtime.h>
-#include <stdio.h>
+#include <objc/message.h>
 
-typedef struct NSType {
+typedef struct NSArray {
     Class class;
     id id;
     struct objc_object obj;
-} NSType;
+} NSArray;
 
-void ns_init(NSType *type, const char *class) {
-    type->class = objc_getClass(class);
-    type->obj.isa = type->class;
-}
-
+void nsarr_init(NSArray *arr);

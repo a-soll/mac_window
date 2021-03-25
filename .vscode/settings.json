@@ -1,8 +1,9 @@
 {
     "files.associations": {
-        "*.h": "c"
+        "*.h": "c",
+        "cstring": "c"
     },
     "code-runner.executorMapByGlob": {
-        "*.c|*.h": "cd $workspaceRoot && clang -o $workspaceRoot/a.out $workspaceRoot/main.c $workspaceRoot/types/nsstring.c -framework AppKit && $workspaceRoot/a.out"
+        "*.c|*.h": "cd $workspaceRoot && clang -o $workspaceRoot/a.out $workspaceRoot/main.c $workspaceRoot/types/nsstring.c $workspaceRoot/types/nsarray.c $workspaceRoot/types/nsrunningapp.c $workspaceRoot/types/nsworkspace.c -framework AppKit && $workspaceRoot/a.out"
     }
 }

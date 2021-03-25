@@ -7,8 +7,7 @@ void nsstr_init(NSString *nstr) {
     nstr->obj.isa = nstr->class;
 }
 
-const char *c_string(NSString *nstr) {
+void c_string(NSString *nstr) {
     SEL m = sel_registerName("UTF8String");
-    const char *ret = ((const char *(*)(id, SEL))objc_msgSend)(nstr->id, m);
-    return ret;
+    nstr->c_string = ((const char *(*)(id, SEL))objc_msgSend)(nstr->id, m);
 }
