@@ -1,30 +1,44 @@
+#include "include/funcs.h"
 #include "include/nsarray.h"
+#include "include/nsstring.h"
 #include "include/nsworkspace.h"
 #include <objc/message.h>
 #include <objc/runtime.h>
 #include <stdio.h>
 
+// TODO: a lot
 int main() {
-    NSWorkspace ws;
-    ws.class = objc_getClass("NSWorkspace");
-    struct objc_object ws_obj = {ws.class};
-    ws.id = ((id(*)(Class, SEL))objc_msgSend)(ws.class, sel_registerName("sharedWorkspace"));
+    NSType ws;
+    ns_init(&ws, "NSWorkspace");
+    SEL workspace = sel_registerName("sharedWorkspace");
+    ws.id = ((id(*)(Class, SEL))objc_msgSend)(ws.class, workspace);
 
-    NSArray apps;
-    apps.class = objc_getClass("NSArray");
-    struct objc_object apps_obj = {apps.class};
-    apps.id = ((id(*)(id, SEL))objc_msgSend)(ws.id, sel_registerName("runningApplications"));
-
-    Class app = objc_getClass("NSRunningApplication");
-    struct objc_object app_obj = {app};
-    id app_id;
+    NSType apps;
+    ns_init(&apps, "NSArray");
+    SEL running_apps = sel_registerName("runningApplications");
+    apps.id = ((id(*)(id, SEL))objc_msgSend)(ws.id, running_apps);
 
     int count;
     count = ((int (*)(id, SEL))objc_msgSend)(apps.id, sel_registerName("count"));
 
+    NSType app;
+    ns_init(&app, "NSRunningApplication");
+
     for (unsigned long i = 0; i < count; i++) {
-        app_id = ((id(*)(id, SEL, unsigned long))objc_msgSend)(apps.id, sel_registerName("objectAtIndex:"), i);
-        pid_t pid = ((pid_t(*)(id, SEL))objc_msgSend)(app_id, sel_registerName("processIdentifier"));
-        printf("%ld\n", (long)pid);
+        NSString p_name;
+        nsstr_init(&p_name);
+
+        SEL index = sel_registerName("objectAtIndex:");
+        app.id = ((id(*)(id, SEL, unsigned long))objc_msgSend)(apps.id, index, i);
+
+        SEL proc_ids = sel_registerName("processIdentifier");
+        pid_t pid = ((pid_t(*)(id, SEL))objc_msgSend)(app.id, proc_ids);
+
+        SEL proc_name = sel_registerName("localizedName");
+        p_name.id = ((id(*)(id, SEL))objc_msgSend)(app.id, proc_name);
+
+        const char *l = c_string(&p_name);
+
+        printf("pid: %d    %s\n", (int)pid, l);
     }
 }
