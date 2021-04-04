@@ -2,3 +2,5 @@
 *.m
 a.out
 document.c
+*test*
+dump

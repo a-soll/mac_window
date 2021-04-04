@@ -8,14 +8,8 @@
                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/Library/Frameworks"
             ],
             "includePath": [
-                "/usr/local/include",
-                "/System/Library/Frameworks"
-            ],
-            "browse": {
-                "path": [
-                    "/System/Library/Frameworks"
-                ]
-            }
+                "/usr/local/include"
+            ]
         }
     ],
     "version": 4

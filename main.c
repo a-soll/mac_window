@@ -1,41 +1,51 @@
-#include "include/ns_types.h"
-#include <objc/message.h>
-#include <objc/runtime.h>
-#include <stdio.h>
+#include "includes.h"
+#include <ApplicationServices/ApplicationServices.h>
+#include <CoreGraphics/CoreGraphics.h>
+#include <NSObjects/NSBase.h>
 
-// TODO: a lot
 int main() {
-    NSWorkspace ws;
-    ws_init(&ws);
-    SEL workspace = sel_registerName("sharedWorkspace");
-    ws.id = ((id(*)(Class, SEL))objc_msgSend)(ws.class, workspace);
+    Window w;
+    CFTypeRef pos;
+    CFTypeRef size;
+    CFArrayRef windows;
 
-    NSArray apps;
-    nsarr_init(&apps);
-    SEL running_apps = sel_registerName("runningApplications");
-    apps.id = ((id(*)(id, SEL))objc_msgSend)(ws.id, running_apps);
+    // get window of app
+    getWindowByName(&w, "Code");
 
-    int count;
-    SEL apps_count = sel_registerName("count");
-    count = ((int (*)(id, SEL))objc_msgSend)(apps.id, apps_count);
+    // create accessibility object by app's pid
+    AXUIElementRef elem = AXUIElementCreateApplication(w.pid);
 
-    NSRunningApplication app;
-    nsrunningapp_init(&app);
+    // populate array of all UI element values for the windows
+    AXUIElementCopyAttributeValue(elem, kAXWindowsAttribute, (CFTypeRef *)&windows);
 
-    for (int i = 0; i < count; i++) {
-        NSString p_name;
-        nsstr_init(&p_name);
+    // create UIElement for item in first spot of array
+    AXUIElementRef windowRef = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
 
-        SEL index = sel_registerName("objectAtIndex:");
-        app.id = ((id(*)(id, SEL, int))objc_msgSend)(apps.id, index, i);
+    // copies the position attribute to pos
+    AXUIElementCopyAttributeValue(windowRef, kAXPositionAttribute, (CFTypeRef *)&pos);
+    AXUIElementCopyAttributeValue(windowRef, kAXSizeAttribute, (CFTypeRef *)&size);
 
-        SEL proc_ids = sel_registerName("processIdentifier");
-        pid_t pid = ((pid_t(*)(id, SEL))objc_msgSend)(app.id, proc_ids);
+    CGPoint curPosition;
+    AXValueGetValue(pos, kAXValueCGPointType, &curPosition);
 
-        SEL proc_name = sel_registerName("localizedName");
-        p_name.id = ((id(*)(id, SEL))objc_msgSend)(app.id, proc_name);
-        c_string(&p_name);
+    CGSize curSize;
+    AXValueGetValue(size, kAXValueCGSizeType, &curSize);
 
-        printf("pid: %d    %s\n", (int)pid, p_name.c_string);
-    }
+    printf("POSITION\n");
+    printf("x   %f\ny   %f\n\n", curPosition.x, curPosition.y);
+
+    printf("SIZE\n");
+    printf("width    %f\nheight    %f\n", curSize.width, curSize.height);
+
+    // move window to new position
+    CGPoint newPosition = {0, 0};
+    pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPosition));
+    AXUIElementSetAttributeValue(windowRef, kAXPositionAttribute, pos);
+
+    sleep(1);
+
+    // move window back to old position
+    pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&curPosition));
+    AXUIElementSetAttributeValue(windowRef, kAXPositionAttribute, pos);
+    return 0;
 }

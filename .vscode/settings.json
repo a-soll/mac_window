@@ -1,9 +1,15 @@
 {
     "files.associations": {
         "*.h": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "array": "c",
+        "deque": "c",
+        "vector": "c",
+        "string_view": "c",
+        "ranges": "c",
+        "thread": "c"
     },
     "code-runner.executorMapByGlob": {
-        "*.c|*.h": "cd $workspaceRoot && clang -o $workspaceRoot/a.out $workspaceRoot/main.c $workspaceRoot/ns_types.c -framework AppKit && $workspaceRoot/a.out"
+        "main.c": "cd $workspaceRoot && clang -o $workspaceRoot/a.out main.c $workspaceRoot/source/windows.c /usr/local/lib/libobjc.a -framework AppKit && $workspaceRoot/a.out"
     }
 }
