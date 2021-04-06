@@ -2,16 +2,14 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: clang build active file",
+            "label": "no frame",
             "command": "/usr/bin/clang",
             "args": [
                 "-g",
                 "-o",
                 "a.out",
                 "main.c",
-                "ns_types.c",
-                "-framework",
-                "CoreGraphics",
+                "source/windows.c",
                 "-framework",
                 "AppKit"
             ],

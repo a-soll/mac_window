@@ -2,15 +2,16 @@
 
 typedef struct Window {
     int pid;
-    const char *name;
+    char name[99];
     bool OnScren;
     int memoryUsage;
-    struct windowBounds {
-        int height;
-        int width;
-        int x;
-        int y;
-    } windowBounds;
+    CGPoint position;
+    CGSize size;
 } Window;
 
-void getWindowByName(Window *w, const char *name);
+/*!
+    @function getWindowList
+    populates an array of Window structs for all currently visible windows
+    @param Window pointer to Window struct. will initialize as array of Windows
+*/
+int getWindowList(Window **w);
