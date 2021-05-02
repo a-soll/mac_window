@@ -2,7 +2,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 typedef struct Window {
-    int pid;
+    pid_t pid;
     char name[99];
     bool onScreen;
     CGPoint position;

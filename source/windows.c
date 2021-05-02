@@ -49,19 +49,17 @@ int getWindowList(Window **w) {
     for (int i = 0; i < count; i++) {
         Window window;
         CGRect dimensions;
-        const void *owner;
-        const void *pid;
-        const void *onScreen;
-        int *windowLayer;
+        CFStringRef owner;
+        CFNumberRef pid;
+        CFNumberRef windowLayer;
 
         CFDictionaryRef info = (CFTypeRef)CFArrayGetValueAtIndex(ws_info, i);
         CFStringRef bounds = CFDictionaryGetValue(info, kCGWindowBounds);
-        windowLayer = (int *)CFDictionaryGetValue(info, kCGWindowLayer);
-        owner = CFDictionaryGetValue(info, kCGWindowOwnerName);
-        pid = CFDictionaryGetValue(info, kCGWindowOwnerPID);
+        windowLayer = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowLayer);
+        owner = (CFStringRef)CFDictionaryGetValue(info, kCGWindowOwnerName);
+        pid = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowOwnerPID);
 
         CFIndex len = CFStringGetLength(owner) + 1;
-        int memUsage;
         char cName[len];
 
         // gets the position and size
@@ -69,8 +67,8 @@ int getWindowList(Window **w) {
         window.size = dimensions.size;
         window.position = dimensions.origin;
         CFStringGetCString(owner, cName, len, kCFStringEncodingUTF8);
-        CFNumberGetValue(pid, kCFNumberNSIntegerType, &pid);
-        window.pid = (int)pid;
+
+        CFNumberGetValue(pid, kCFNumberNSIntegerType, (void *)&window.pid);
         strcpy(window.name, cName);
         _getUIElements(&window);
         win[i] = window;

@@ -2,6 +2,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 extern int g_conection;
+extern uint64_t SLSGetActiveSpace(int cid);
 extern AXError _AXUIElementGetWindow(AXUIElementRef ref, uint32_t *wid);
 extern int SLSMainConnectionID(void);
 extern CGError SLSGetWindowBounds(int cid, uint32_t wid, CGRect *frame);
@@ -55,6 +56,7 @@ extern uint64_t SLSWindowIteratorGetTags(CFTypeRef iterator);
 extern OSStatus _SLPSGetFrontProcess(ProcessSerialNumber *psn);
 extern CGError SLSGetWindowOwner(int cid, uint32_t wid, int *wcid);
 extern CGError SLSGetConnectionPSN(int cid, ProcessSerialNumber *psn);
+extern CGError SLSGetConnectionIDForPSN(int cid, ProcessSerialNumber *psn, int *process_cid);
 extern CGError SLSConnectionGetPID(int cid, pid_t *pid);
 extern CGError _SLPSSetFrontProcessWithOptions(ProcessSerialNumber *psn, uint32_t wid, uint32_t mode);
 extern CGError SLPSPostEventRecordTo(ProcessSerialNumber *psn, uint8_t *bytes);
