@@ -5,51 +5,63 @@
 
 int main() {
     Window *w = NULL;
+    CFArrayRef windows;
     CFTypeRef pos;
     CFTypeRef size;
 
     // get window of app
-    int numWindows = getWindowList(&w);
+    int count = getWindowList(&w);
+    int ind = getWindowByName(w, count, "Safari");
+    Window app = w[ind];
+    printf("%s\n", app.name);
+    // AXUIElementCopyAttributeNames(CFArrayGetValueAtIndex(app.arr, 0), &windows);
+    CFShow(app.uiElements);
+    printf("%d\n", app.pid);
+    printf("%f\n", app.size.width);
+    // moveWindow(&app, 10, 10);
 
-    for (int i = 0; i < numWindows; i++) {
-        printf("%d\n", w[i].pid);
-    }
-    free(w);
-    //     // create accessibility object by app's pid
-    //     AXUIElementRef elem = AXUIElementCreateApplication(window.pid);
+    // // create accessibility object by app's pid
+    // AXUIElementRef elem = AXUIElementCreateApplication(app.pid);
 
-    //     // populate array of all UI element values for the windows
-    //     AXUIElementCopyAttributeValue(elem, kAXWindowsAttribute, (CFTypeRef *)&window);
+    // // populate array of all UI element values for the windows
+    // AXUIElementCopyAttributeValue(elem, kAXWindowsAttribute, (CFTypeRef *)&windows);
 
-    //     // create UIElement for item in first spot of array
-    //     AXUIElementRef windowRef = (AXUIElementRef)CFArrayGetValueAtIndex(window, 0);
+    releaseWindow(w, count);
+    exit(0);
+    // create accessibility object by app's pid
+    AXUIElementRef elem = AXUIElementCreateApplication(w[0].pid);
 
-    //     // copies the position attribute to pos
-    //     AXUIElementCopyAttributeValue(windowRef, kAXPositionAttribute, (CFTypeRef *)&pos);
-    //     AXUIElementCopyAttributeValue(windowRef, kAXSizeAttribute, (CFTypeRef *)&size);
+    // populate array of all UI element values for the windows
+    AXUIElementCopyAttributeValue(elem, kAXWindowsAttribute, (CFTypeRef *)&windows);
 
-    //     CGPoint curPosition;
-    //     AXValueGetValue(pos, kAXValueCGPointType, &curPosition);
+    // create UIElement for item in first spot of array
+    AXUIElementRef windowRef = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
 
-    //     CGSize curSize;
-    //     AXValueGetValue(size, kAXValueCGSizeType, &curSize);
+    // copies the position attribute to pos
+    AXUIElementCopyAttributeValue(windowRef, kAXPositionAttribute, (CFTypeRef *)&pos);
+    AXUIElementCopyAttributeValue(windowRef, kAXSizeAttribute, (CFTypeRef *)&size);
 
-    //     printf("POSITION\n");
-    //     printf("x   %f\ny   %f\n\n", w[0]->position.x, w[0]->position.y);
+    CGPoint curPosition;
+    AXValueGetValue(pos, kAXValueCGPointType, &curPosition);
 
-    //     printf("SIZE\n");
-    //     printf("width    %f\nheight    %f\n", w[0]->size.width, w[0]->size.height);
+    CGSize curSize;
+    AXValueGetValue(size, kAXValueCGSizeType, &curSize);
 
-    //     // move window to new position
-    //     CGPoint newPosition = {0, 0};
-    //     pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPosition));
-    //     AXUIElementSetAttributeValue(windowRef, kAXPositionAttribute, pos);
+    printf("POSITION\n");
+    printf("x   %f\ny   %f\n\n", curPosition.x, curPosition.y);
 
-    //     sleep(1);
+    printf("SIZE\n");
+    printf("width    %f\nheight    %f\n", curSize.width, curSize.height);
 
-    //     // move window back to old position
-    //     pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&curPosition));
-    //     AXUIElementSetAttributeValue(windowRef, kAXPositionAttribute, pos);
-    //     return 0;
-    // }
+    // move window to new position
+    CGPoint newPosition = {0, 0};
+    pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPosition));
+    AXUIElementSetAttributeValue(windowRef, kAXPositionAttribute, pos);
+
+    sleep(1);
+
+    // move window back to old position
+    pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&curPosition));
+    AXUIElementSetAttributeValue(windowRef, kAXPositionAttribute, pos);
+    return 0;
 }

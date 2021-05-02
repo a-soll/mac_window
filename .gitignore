@@ -4,3 +4,6 @@ a.out
 document.c
 *test*
 dump
+notes
+CGSPrivate.h
+*.ini
