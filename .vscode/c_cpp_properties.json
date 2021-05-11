@@ -5,7 +5,7 @@
             "intelliSenseMode": "macos-gcc-x64",
             "cStandard": "gnu17",
             "macFrameworkPath": [
-                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/Library/Frameworks",
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks",
                 "/System/Library/PrivateFrameworks"
             ],
             "includePath": [

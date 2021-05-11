@@ -27,7 +27,7 @@ int getWindowList(Window **w);
 int getWindowByName(Window *w, int count, const char *appName);
 
 // move the app given app window
-void moveWindow(Window *w, int x, int y);
+void moveWindow(Window *w, CGPoint p);
 
 // properly free Window list
 void releaseWindow(Window *w, int count);

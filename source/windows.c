@@ -90,12 +90,20 @@ int getWindowByName(Window *w, int count, const char *appName) {
     return ret;
 }
 
-// TODO: make this work
-void moveWindow(Window *w, int x, int y) {
-    CGPoint newPosition = {x, y};
-    CFTypeRef pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPosition));
-    CFShow(w->uiElements);
-    // AXUIElementSetAttributeValue(w->uiElements, kAXPositionAttribute, pos);
+void moveWindow(Window *w, CGPoint p) {
+    AXUIElementRef uiwindow;
+    AXError moved;
+    CFTypeRef pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&p));
+    int len = CFArrayGetCount(w->uiElements);
+
+    for (int i = 0; i < len; i++) {
+        uiwindow = CFArrayGetValueAtIndex(w->uiElements, i);
+        moved = AXUIElementSetAttributeValue(uiwindow, kAXPositionAttribute, pos);
+    }
+    if (moved == kAXErrorSuccess) {
+        w->position = p;
+    }
+    CFRelease(pos);
 }
 
 void releaseWindow(Window *w, int count) {
