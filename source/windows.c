@@ -1,32 +1,14 @@
 #include "../util/windows.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-// TODO: move AXUI logic. Window structs will only use CFArrayRef.
 void _getUIElements(Window *w) {
     CFArrayRef windows;
-
-    // create accessibility object by app's pid
     AXUIElementRef elem = AXUIElementCreateApplication(w->pid);
 
-    // populate array of all UI element values for the windows
+    // populate array of all UI element values for the app's windows
     AXError err = AXUIElementCopyAttributeValue(elem, kAXWindowsAttribute, (CFTypeRef *)&windows);
-    w->uiElements = windows;
-    if (windows) {
-        if (CFArrayGetCount(windows) > 0) {
-            CFTypeRef pos;
-            CFTypeRef size;
-
-            // create UIElement for item in first spot of array
-            AXUIElementRef windowRef = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
-
-            // copies the position attribute to pos
-            AXUIElementCopyAttributeValue(windowRef, kAXPositionAttribute, (CFTypeRef *)&pos);
-            AXUIElementCopyAttributeValue(windowRef, kAXSizeAttribute, (CFTypeRef *)&size);
-            AXValueGetValue(pos, kAXValueCGPointType, &w->position);
-            AXValueGetValue(size, kAXValueCGSizeType, &w->size);
-            CFRelease(pos);
-            CFRelease(size);
-        }
+    if (err == kAXErrorSuccess) {
+        w->uiElements = windows;
     }
     CFRelease(elem);
 }
@@ -34,7 +16,6 @@ void _getUIElements(Window *w) {
 int getWindowList(Window **w) {
     int length = 0;
     Window *win;
-
     CFArrayRef ws = CGWindowListCreate(kCGWindowListOptionAll, kCGNullWindowID);
     CFIndex count = CFArrayGetCount(ws);
     CFArrayRef ws_info = CGWindowListCreateDescriptionFromArray(ws);

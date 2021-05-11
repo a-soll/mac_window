@@ -1,7 +1,6 @@
 #include "includes.h"
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreGraphics/CoreGraphics.h>
-#include <NSObjects/NSBase.h>
 
 int main() {
     Window *w = NULL;
