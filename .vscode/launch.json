@@ -31,7 +31,7 @@
             "preLaunchTask": "C/C++: clang build active file"
         },
         {
-            "name": "clang - Build and debug active file",
+            "name": "mac_window",
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/a.out",

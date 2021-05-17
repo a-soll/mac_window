@@ -9,9 +9,16 @@
                 "-o",
                 "a.out",
                 "main.c",
+                "-I${workspaceRoot}",
                 "source/windows.c",
+                "source/applications.c",
+                "source/display.c",
                 "-framework",
-                "AppKit"
+                "AppKit",
+                "-iframework",
+                "/System/Library/PrivateFrameworks",
+                "-framework",
+                "SkyLight"
             ],
             "options": {
                 "cwd": "${fileDirname}"

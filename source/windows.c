@@ -1,96 +1,118 @@
-#include "../util/windows.h"
+#include "include/windows.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-void _getUIElements(Window *w) {
-    CFArrayRef windows;
-    AXUIElementRef elem = AXUIElementCreateApplication(w->pid);
-
-    // populate array of all UI element values for the app's windows
-    AXError err = AXUIElementCopyAttributeValue(elem, kAXWindowsAttribute, (CFTypeRef *)&windows);
-    if (err == kAXErrorSuccess) {
-        w->uiElements = windows;
-    }
-    CFRelease(elem);
-}
-
-int getWindowList(Window **w) {
-    int length = 0;
-    Window *win;
-    CFArrayRef ws = CGWindowListCreate(kCGWindowListOptionAll, kCGNullWindowID);
-    CFIndex count = CFArrayGetCount(ws);
-    CFArrayRef ws_info = CGWindowListCreateDescriptionFromArray(ws);
-
-    // reallocate on consecutive calls
-    if (*w == NULL) {
-        win = malloc(count * sizeof(Window));
-    } else {
-        win = realloc(*w, count * sizeof(Window));
-    }
-
-    for (int i = 0; i < count; i++) {
-        Window window;
-        CGRect dimensions;
-        CFStringRef owner;
-        CFNumberRef pid;
-        CFNumberRef windowLayer;
-
-        CFDictionaryRef info = (CFTypeRef)CFArrayGetValueAtIndex(ws_info, i);
-        CFStringRef bounds = CFDictionaryGetValue(info, kCGWindowBounds);
-        windowLayer = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowLayer);
-        owner = (CFStringRef)CFDictionaryGetValue(info, kCGWindowOwnerName);
-        pid = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowOwnerPID);
-
-        CFIndex len = CFStringGetLength(owner) + 1;
-        char cName[len];
-
-        // gets the position and size
-        CGRectMakeWithDictionaryRepresentation((CFTypeRef)CFDictionaryGetValue(info, kCGWindowBounds), &dimensions);
-        window.size = dimensions.size;
-        window.position = dimensions.origin;
-        CFStringGetCString(owner, cName, len, kCFStringEncodingUTF8);
-
-        CFNumberGetValue(pid, kCFNumberNSIntegerType, (void *)&window.pid);
-        strcpy(window.name, cName);
-        _getUIElements(&window);
-        win[i] = window;
-    }
-    *w = win;
-    CFRelease(ws_info);
-    CFRelease(ws);
-    return count;
-}
-
-int getWindowByName(Window *w, int count, const char *appName) {
-    int ret = -1;
-
-    for (int i = 0; i < count; i++) {
-        if (strcmp(w[i].name, appName) == 0) {
-            ret = i;
+// returns index of displayList that has current display for given window
+void windowGetDisplay(Window *w) {
+    uint32_t wid = w->wid;
+    CFStringRef displayString = SLSCopyManagedDisplayForWindow(g_connection, wid);
+    for (int i = 0; i < displayCount; i++) {
+        if (CFStringCompare(displayString, displayList[i].uuid, kCFCompareEqualTo) == 0) {
+            w->displayIndex = i;
         }
     }
-    return ret;
+    CFRelease(displayString);
 }
 
-void moveWindow(Window *w, CGPoint p) {
-    AXUIElementRef uiwindow;
-    AXError moved;
-    CFTypeRef pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&p));
-    int len = CFArrayGetCount(w->uiElements);
+void windowResize(Window *w, double width, double height) {
+    CGSize newSize = {width, height};
+    AXError err;
+    CFTypeRef size = (CFTypeRef)(AXValueCreate(kAXValueCGSizeType, (const void *)&newSize));
 
-    for (int i = 0; i < len; i++) {
-        uiwindow = CFArrayGetValueAtIndex(w->uiElements, i);
-        moved = AXUIElementSetAttributeValue(uiwindow, kAXPositionAttribute, pos);
+    err = AXUIElementSetAttributeValue(w->uiElem, kAXSizeAttribute, size);
+    if (err == kAXErrorSuccess) {
+        w->size = newSize;
     }
-    if (moved == kAXErrorSuccess) {
-        w->position = p;
+    CFRelease(size);
+}
+
+void windowMoveByCorner(Window *w, wcorner_t corner, double x, double y) {
+    CGPoint newPos;
+    double x_diff;
+    double y_diff;
+
+    switch (corner) {
+    case wTopLeft:
+        newPos.x = x;
+        newPos.y = y;
+        break;
+    case wTopRight:
+        x_diff = x - w->topright.x;
+        newPos.x = x_diff + w->topleft.x;
+        newPos.y = y;
+        break;
+    case wBottomLeft:
+        newPos.x = x;
+        newPos.y = y - w->size.height;
+        break;
+    case wBottomRight:
+        x_diff = w->bottomright.x - x;
+        newPos.x = w->bottomright.x - x_diff;
+        y_diff = w->size.height + (w->bottomright.y - y);
+        newPos.y = w->bottomright.y -  y_diff;
+        break;
+    default:
+        newPos.x = x;
+        newPos.y = y;
+        break;
+    }
+    windowMove(w, newPos.x, newPos.y);
+}
+
+void windowMove(Window *w, double x, double y) {
+    CGPoint newPos = {x, y};
+    AXError err;
+    CFTypeRef pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPos));
+
+    err = AXUIElementSetAttributeValue(w->uiElem, kAXPositionAttribute, pos);
+    if (err == kAXErrorSuccess) {
+        w->position = newPos;
+        windowGetDisplay(w);
     }
     CFRelease(pos);
 }
 
-void releaseWindow(Window *w, int count) {
+void windowGetDimensions(Window *w) {
+    Display *d = &displayList[w->displayIndex];
+
+    w->topleft.x = w->position.x;
+    w->topleft.y = w->position.y;
+
+    w->topright.x = w->position.x + w->size.width;
+    w->topright.y = w->position.y;
+
+    w->bottomleft.x = w->position.x;
+    w->bottomleft.y = w->topleft.y + w->size.height;
+
+    w->bottomright.x = w->position.x + w->size.width;
+    w->bottomright.y = d->height - w->size.height;
+}
+
+void initWindow(Window *w, CFArrayRef uiElems, int count) {
     for (int i = 0; i < count; i++) {
-        if (w[i].uiElements) {
-            CFRelease(w[i].uiElements);
+        CFTypeRef size;
+        CFTypeRef pos;
+        uint32_t wid;
+        w[i].uiElem = CFArrayGetValueAtIndex(uiElems, i);
+
+        AXUIElementCopyAttributeValue(w[i].uiElem, kAXSizeAttribute, &size);
+        AXUIElementCopyAttributeValue(w[i].uiElem, kAXPositionAttribute, &pos);
+        // retain uiElem so that uiElems can be freed without losing reference
+        CFRetain(w[i].uiElem);
+        AXValueGetValue(size, kAXValueCGSizeType, &w[i].size);
+        AXValueGetValue(pos, kAXValueCGPointType, &w[i].position);
+        _AXUIElementGetWindow(w[i].uiElem, &wid);
+        w[i].wid = wid;
+        windowGetDisplay(&w[i]);
+        windowGetDimensions(&w[i]);
+        CFRelease(size);
+        CFRelease(pos);
+    }
+}
+
+void releaseWindowList(Window *w, int count) {
+    for (int i = 0; i < count; i++) {
+        if (w[i].uiElem) {
+            CFRelease(w[i].uiElem);
         }
     }
     free(w);

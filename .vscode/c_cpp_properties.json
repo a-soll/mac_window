@@ -9,7 +9,7 @@
                 "/System/Library/PrivateFrameworks"
             ],
             "includePath": [
-                "/usr/local/include"
+                "${workspaceRoot}"
             ]
         }
     ],
