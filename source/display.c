@@ -1,4 +1,3 @@
-#define MY_C_FILE
 #include "include/display.h"
 
 void getDisplayDimensions(Display *d, CGDirectDisplayID did) {

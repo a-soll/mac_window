@@ -1,7 +1,7 @@
 FRAMEWORK = -framework AppKit -framework SkyLight
 PRIVATE_FRAMEWORK = -iframework /System/Library/PrivateFrameworks
 BUILD_FLAGS = -I./
-SOURCES = $(wildcard ./source/*.c)
+SOURCES = $(wildcard ./source/*.c ./source/*.m)
 MAIN = ./main.c
 OUT_DIR = .
 OUT_FILE = $(OUT_DIR)/a.out

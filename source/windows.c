@@ -25,26 +25,26 @@ void windowResize(Window *w, double width, double height) {
     CFRelease(size);
 }
 
-void windowMoveByCorner(Window *w, wcorner_t corner, double x, double y) {
+void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
     CGPoint newPos;
     double x_diff;
     double y_diff;
 
     switch (corner) {
-    case wTopLeft:
+    case cTopLeft:
         newPos.x = x;
         newPos.y = y;
         break;
-    case wTopRight:
+    case cTopRight:
         x_diff = x - w->topright.x;
         newPos.x = x_diff + w->topleft.x;
         newPos.y = y;
         break;
-    case wBottomLeft:
+    case cBottomLeft:
         newPos.x = x;
         newPos.y = y - w->size.height;
         break;
-    case wBottomRight:
+    case cBottomRight:
         x_diff = w->bottomright.x - x;
         newPos.x = w->bottomright.x - x_diff;
         y_diff = w->size.height + (w->bottomright.y - y);

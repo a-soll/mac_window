@@ -1,33 +1,44 @@
 #include "include/CGSSpaces.h"
 #include "include/base.h"
 #include "include/includes.h"
+#include "include/notif.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-// probably will always be prototype/test code
 int main() {
     // init global variables
     g_connection = SLSMainConnectionID();
     displayList = NULL;
     displayCount = getDisplayList(&displayList);
+    void *g_workspace_context;
+
+    workspace_event_handler_init(&g_workspace_context);
+    workspace_event_handler_begin(&g_workspace_context);
 
     Application *apps = NULL;
     int count = getOpenApplications(&apps);
 
+    printf("%d\n", count);
+
+    bridgeNSAppLoad();
+    CFRunLoopRun();
+    exit(0);
+
     for (int i = 0; i < count; i++) {
         Application *app = &apps[i];
-        if (strcmp(app->name, "Messages") == 0) {
+        if (strcmp(app->name, "Code") == 0) {
             for (int j = 0; j < app->windowCount; j++) {
                 Window *w = &app->windows[j];
                 Display *d = &displayList[w->displayIndex];
                 CGPoint oldPos = w->position;
                 CGSize oldSize = w->size;
 
+                printf("%d\n", w->wid);
                 // printf("%f\n", w->topright.x);
                 // printf("%f\n", w->topright.y);
                 // printf("%f\n", d->topright.y - w->topright.y);
-                windowMoveByCorner(w, wBottomRight, 3026, 767);
+                windowMoveByCorner(w, cTopRight, d->topright.x, d->topright.y);
+                // windowMove(w, d->width - w->size.width, d->origin.y);
                 exit(0);
-                windowMove(w, d->width - w->size.width, d->origin.y);
                 // windowGetDisplay(w);
                 // printf("x: %f\n", w->position.x);
                 // printf("y: %f\n\n", w->position.y);
@@ -49,7 +60,7 @@ int main() {
 
     for (int i = 0; i < displayCount; i++) {
         Display d = displayList[i];
-        // printf("%f\n", d.width);
+        printf("%f\n", d.width);
     }
     releaseApplicationList(apps, count);
     releaseDisplayList(displayList, displayCount);

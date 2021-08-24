@@ -24,13 +24,6 @@ typedef struct Window {
     CGPoint bottomleft;
 } Window;
 
-typedef enum {
-    wTopLeft,
-    wTopRight,
-    wBottomLeft,
-    wBottomRight,
-} wcorner_t;
-
 /*!
     @function getWindowList
     populates an array of Window structs for all currently visible windows
@@ -47,7 +40,7 @@ void windowMove(Window *w, double x, double y);
 // resize given app window
 void windowResize(Window *w, double width, double height);
 
-void windowMoveByCorner(Window *w, wcorner_t corner, double x, double y);
+void windowMoveByCorner(Window *w, corner_t corner, double x, double y);
 
 // properly free Window list
 void releaseWindowList(Window *w, int count);

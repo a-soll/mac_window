@@ -18,13 +18,6 @@ typedef struct Display {
     CGPoint bottomright;
 } Display;
 
-typedef enum {
-    dTopRight,
-    dTopLeft,
-    dBottomRight,
-    dBottomLeft
-} dcorner_t;
-
 int displayCount;
 Display *displayList;
 
