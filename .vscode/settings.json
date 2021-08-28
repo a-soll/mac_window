@@ -1,21 +1,6 @@
 {
-    "files.associations": {
-        "*.h": "c",
-        "cstring": "c",
-        "array": "c",
-        "deque": "c",
-        "vector": "c",
-        "string_view": "c",
-        "ranges": "c",
-        "thread": "c",
-        "bit": "c",
-        "algorithm": "c",
-        "istream": "c",
-        "limits": "c",
-        "streambuf": "c"
-    },
     "code-runner.executorMapByGlob": {
-        "main.c": "cd $workspaceRoot && make && $workspaceRoot/a.out",
+        "main.c": "cd $workspaceRoot && make && $workspaceRoot/mac_window",
         "(spaces|secret).c": "cd /Users/adam/code/mac_window && clang -o /Users/adam/code/mac_window/using_secret/a.out $fullFileName /usr/local/lib/libobjc.a -framework AppKit -iframework /System/Library/PrivateFrameworks -framework SkyLight && /Users/adam/code/mac_window/using_secret/a.out"
     },
     "code-runner.runInTerminal": true,

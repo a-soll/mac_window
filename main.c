@@ -15,13 +15,14 @@ int main() {
     workspace_event_handler_begin(&g_workspace_context);
 
     Application *apps = NULL;
-    int count = getOpenApplications(&apps);
+    Window *windows = NULL;
 
+    int count = getOpenApplications(&apps);
     printf("%d\n", count);
 
-    bridgeNSAppLoad();
-    CFRunLoopRun();
-    exit(0);
+    // bridgeNSAppLoad();
+    // CFRunLoopRun();
+    // exit(0);
 
     for (int i = 0; i < count; i++) {
         Application *app = &apps[i];
@@ -32,12 +33,12 @@ int main() {
                 CGPoint oldPos = w->position;
                 CGSize oldSize = w->size;
 
-                printf("%d\n", w->wid);
+                printf("APP: %s\n", app->name);
+                printf("TOPLEFT: %f\t%f\n", w->topleft.x, w->topleft.y);
                 // printf("%f\n", w->topright.x);
                 // printf("%f\n", w->topright.y);
-                // printf("%f\n", d->topright.y - w->topright.y);
-                windowMoveByCorner(w, cTopRight, d->topright.x, d->topright.y);
-                // windowMove(w, d->width - w->size.width, d->origin.y);
+                // windowResize(w, w->size.width, d->height);
+                // windowResize(w, oldSize.width, oldSize.height);
                 exit(0);
                 // windowGetDisplay(w);
                 // printf("x: %f\n", w->position.x);
