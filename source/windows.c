@@ -46,7 +46,7 @@ void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
         break;
     case cBottomRight:
         x_diff = w->bottomright.x - x;
-        newPos.x = w->bottomright.x - x_diff;
+        newPos.x = (w->bottomright.x - x_diff) - w->size.width;
         y_diff = w->size.height + (w->bottomright.y - y);
         newPos.y = w->bottomright.y -  y_diff;
         break;
@@ -84,7 +84,7 @@ void windowGetDimensions(Window *w) {
     w->bottomleft.y = w->topleft.y + w->size.height;
 
     w->bottomright.x = w->position.x + w->size.width;
-    w->bottomright.y = d->height - w->size.height;
+    w->bottomright.y = w->bottomleft.y;
 }
 
 void initWindow(Window *w, CFArrayRef uiElems, int count) {
