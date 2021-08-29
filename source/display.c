@@ -1,5 +1,7 @@
 #include "include/display.h"
 
+extern int g_connection;
+
 void getDisplayDimensions(Display *d, CGDirectDisplayID did) {
     d->did = did;
     d->width = (double)CGDisplayPixelsWide(d->did);

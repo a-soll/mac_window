@@ -1,14 +1,15 @@
 #ifndef BASE_H
 #define BASE_H
 
+#define MAX_DISPLAYS 5
+#define NAME_LEN 30
+
 // non-struct includes
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include "CGSSpaces.h"
 #include <stdio.h>
-
-int g_connection;
 
 typedef enum {
     cTopLeft,

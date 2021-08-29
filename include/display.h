@@ -3,8 +3,6 @@
 
 #include "base.h"
 
-#define MAX_DISPLAYS 5
-
 typedef struct Display {
     bool isMain;
     int did;

@@ -2,8 +2,8 @@
 #define WINDOWS_H
 
 #include "base.h"
+#include "application.h"
 #include "display.h"
-#include <ApplicationServices/ApplicationServices.h>
 
 /**Window attributes
  * CGPoint position = current position
@@ -13,6 +13,7 @@
  * int displayIndex = index of the Display in displayList that it's currently on
  */
 typedef struct Window {
+    Application *application;
     CGPoint position;
     CGSize size;
     AXUIElementRef uiElem;
@@ -49,7 +50,7 @@ void releaseWindowList(Window *w, int count);
 void releaseWindow(Window *w);
 
 // populates Window struct
-void initWindow(Window *w, CFArrayRef UIElems, int count);
+void initWindow(Window *w);
 
 void windowGetDisplay(Window *w);
 

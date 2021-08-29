@@ -1,7 +1,7 @@
 #ifndef APPLICATIONS_H
 #define APPLICATIONS_H
+
 #include "base.h"
-#include "windows.h"
 
 /**Application attributes
  * pid_t pid = pid of app
@@ -10,11 +10,15 @@
  * Window windows = Window structs for valid open windows of the app
  */
 typedef struct Application {
+    AXUIElementRef uiElem;
     pid_t pid;
-    char name[99];
+    char name[NAME_LEN];
     int windowCount;
-    Window *windows;
 } Application;
+
+CFArrayRef getApplicationWindows(Application app);
+
+Application *initApplication();
 
 int getOpenApplications(Application **app);
 

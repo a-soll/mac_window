@@ -1,5 +1,6 @@
-#include "include/windows.h"
-#include <ApplicationServices/ApplicationServices.h>
+#include "include/window.h"
+
+extern int g_connection;
 
 // returns index of displayList that has current display for given window
 void windowGetDisplay(Window *w) {
@@ -48,7 +49,7 @@ void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
         x_diff = w->bottomright.x - x;
         newPos.x = (w->bottomright.x - x_diff) - w->size.width;
         y_diff = w->size.height + (w->bottomright.y - y);
-        newPos.y = w->bottomright.y -  y_diff;
+        newPos.y = w->bottomright.y - y_diff;
         break;
     default:
         newPos.x = x;
@@ -87,26 +88,50 @@ void windowGetDimensions(Window *w) {
     w->bottomright.y = w->bottomleft.y;
 }
 
-void initWindow(Window *w, CFArrayRef uiElems, int count) {
-    for (int i = 0; i < count; i++) {
-        CFTypeRef size;
-        CFTypeRef pos;
-        uint32_t wid;
-        w[i].uiElem = CFArrayGetValueAtIndex(uiElems, i);
+int getWindowList(Window **w) {
+    Window *window;
+    Application app;
+    pid_t pid;
+    ProcessSerialNumber psn;
+    pid_t procpid;
 
-        AXUIElementCopyAttributeValue(w[i].uiElem, kAXSizeAttribute, &size);
-        AXUIElementCopyAttributeValue(w[i].uiElem, kAXPositionAttribute, &pos);
-        // retain uiElem so that uiElems can be freed without losing reference
-        CFRetain(w[i].uiElem);
-        AXValueGetValue(size, kAXValueCGSizeType, &w[i].size);
-        AXValueGetValue(pos, kAXValueCGPointType, &w[i].position);
-        _AXUIElementGetWindow(w[i].uiElem, &wid);
-        w[i].wid = wid;
-        windowGetDisplay(&w[i]);
-        windowGetDimensions(&w[i]);
-        CFRelease(size);
-        CFRelease(pos);
-    }
+    SLSGetConnectionPSN(g_connection, &psn);
+    SLSConnectionGetPID(g_connection, &pid);
+
+    // app.uiElem = AXUIElementCreateApplication(pid);
+    // CFArrayRef window_list = getApplicationWindows(app);
+    // CFShow(window_list);
+    // CFArrayRef ws = CGWindowListCreate(kCGWindowListExcludeDesktopElements, kCGNullWindowID);
+    // CFIndex count = CFArrayGetCount(ws);
+    // CFArrayRef ws_info = CGWindowListCreateDescriptionFromArray(ws);
+
+    // for (int i = 0; i < count; i++) {
+    //     CFDictionaryRef info = (CFTypeRef)CFArrayGetValueAtIndex(ws_info, i);
+    //     CFShow(info);
+    // }
+    return 0;
+}
+
+void initWindow(Window *w) {
+    CFTypeRef size;
+    CFTypeRef pos;
+    uint32_t wid;
+
+    AXUIElementRef elem = AXUIElementCreateApplication(w->application->pid);
+    CFShow(elem);
+    // w->uiElem = CFArrayGetValueAtIndex(uiElems, i);
+    // AXUIElementCopyAttributeValue(w[i].uiElem, kAXSizeAttribute, &size);
+    // AXUIElementCopyAttributeValue(w[i].uiElem, kAXPositionAttribute, &pos);
+    // // retain uiElem so that uiElems can be freed without losing reference
+    // CFRetain(w[i].uiElem);
+    // AXValueGetValue(size, kAXValueCGSizeType, &w[i].size);
+    // AXValueGetValue(pos, kAXValueCGPointType, &w[i].position);
+    // _AXUIElementGetWindow(w[i].uiElem, &wid);
+    // w[i].wid = wid;
+    // windowGetDisplay(&w[i]);
+    // windowGetDimensions(&w[i]);
+    // CFRelease(size);
+    // CFRelease(pos);
 }
 
 void releaseWindowList(Window *w, int count) {
