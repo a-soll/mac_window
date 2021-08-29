@@ -4,6 +4,8 @@
 #include "base.h"
 #include "application.h"
 #include "display.h"
+#include "bucket.h"
+#include "process.h"
 
 /**Window attributes
  * CGPoint position = current position
@@ -30,7 +32,7 @@ typedef struct Window {
     populates an array of Window structs for all currently visible windows
     @param Window pointer to Window struct. will initialize as array of Windows
 */
-int getWindowList(Window **w);
+void getWindowList();
 
 // gets windows by their name
 int getWindowByName(Window *w, int count, const char *appName);

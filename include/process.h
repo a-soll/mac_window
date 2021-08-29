@@ -2,21 +2,20 @@
 #define PROCESS_H
 
 #include "base.h"
-#include "hash.h"
+#include "bucket.h"
 
-Bucket *proc_array[125];
 Bucket *proc_bucket;
 
 typedef struct Proccess {
     pid_t pid;
     ProcessSerialNumber psn;
-    char name[NAME_LEN];
+    char name[APP_NAME_MAX];
 } Process;
 
-int getProcessList(Process **p);
+void getProcessList();
 
-Process *getProcessByPid(pid_t pid);
+Process *getProcess(ProcessSerialNumber psn);
 
-void procBucketAdd(Process *process);
+void removeProcess(ProcessSerialNumber psn);
 
 #endif /* PROCESS_H */

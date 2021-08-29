@@ -2,9 +2,9 @@
 #define INCLUDES_H
 
 #include "application.h"
-#include "window.h"
+#include "bucket.h"
 #include "display.h"
 #include "process.h"
-#include "hash.h"
+#include "window.h"
 
 #endif /* INCLUDES_H */

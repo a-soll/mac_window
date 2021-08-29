@@ -1,5 +1,7 @@
 #include "include/process.h"
 
+extern Table *proc_table;
+
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 Process *initProcess(ProcessSerialNumber psn) {
     Process *process;
@@ -10,33 +12,28 @@ Process *initProcess(ProcessSerialNumber psn) {
     CFStringRef name_ref;
     CopyProcessName(&psn, &name_ref);
     process = malloc(sizeof(Process));
-    CFStringGetCString(name_ref, process->name, NAME_LEN, kUnicodeUTF8Format);
+    CFStringGetCString(name_ref, process->name, APP_NAME_MAX, kUnicodeUTF8Format);
     process->pid = pid;
     process->psn = psn;
     return process;
 }
 
-Process *getProcessByPid(pid_t pid) {
-    Process *process = (Process *)bucket_search(pid, proc_array, proc_bucket->capacity);
+Process *getProcess(ProcessSerialNumber psn) {
+    Process *process = (Process *)table_search(proc_table, psn.lowLongOfPSN);
+    return process;
 }
 
-void procBucketAdd(Process *process) {
-    proc_bucket = malloc(sizeof(Bucket));
-    proc_bucket->capacity = 125;
-    bucket_insert(proc_bucket, proc_array, process->pid, process);
+void removeProcess(ProcessSerialNumber psn) {
+    table_delete_item(proc_table, psn.lowLongOfPSN);
 }
 
-int getProcessList(Process **p) {
-    int count = 0;
+void getProcessList() {
     Process *process;
+    proc_table = table_init(125);
 
     ProcessSerialNumber psn = {kNoProcess, kNoProcess};
     while (GetNextProcess(&psn) == noErr) {
         process = initProcess(psn);
-        printf("%d\n", process->pid);
-        procBucketAdd(process);
-        count++;
+        table_insert(proc_table, process->psn.lowLongOfPSN, process);
     }
-    searchProcBucket(25177);
-    return count;
 }

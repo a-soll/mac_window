@@ -1,6 +1,7 @@
 #include "include/window.h"
 
 extern int g_connection;
+extern Table *proc_table;
 
 // returns index of displayList that has current display for given window
 void windowGetDisplay(Window *w) {
@@ -88,29 +89,45 @@ void windowGetDimensions(Window *w) {
     w->bottomright.y = w->bottomleft.y;
 }
 
-int getWindowList(Window **w) {
+// TODO: this will create windows and applications from the processes
+void getWindowList() {
     Window *window;
-    Application app;
-    pid_t pid;
-    ProcessSerialNumber psn;
-    pid_t procpid;
 
-    SLSGetConnectionPSN(g_connection, &psn);
-    SLSConnectionGetPID(g_connection, &pid);
-
-    // app.uiElem = AXUIElementCreateApplication(pid);
-    // CFArrayRef window_list = getApplicationWindows(app);
-    // CFShow(window_list);
-    // CFArrayRef ws = CGWindowListCreate(kCGWindowListExcludeDesktopElements, kCGNullWindowID);
-    // CFIndex count = CFArrayGetCount(ws);
-    // CFArrayRef ws_info = CGWindowListCreateDescriptionFromArray(ws);
-
-    // for (int i = 0; i < count; i++) {
-    //     CFDictionaryRef info = (CFTypeRef)CFArrayGetValueAtIndex(ws_info, i);
-    //     CFShow(info);
-    // }
-    return 0;
+    int i = 0;
+    while (i < proc_table->size) {
+        if (valid_bucket(proc_table, i)) {
+            Process *process = (Process *)proc_table->buckets[i]->data;
+            printf("%s\n", process->name);
+            printf("%d\n", process->pid);
+            printf("%d\n", process->psn.lowLongOfPSN);
+        }
+        i++;
+    }
 }
+
+// for (int i = 0; i < proc_table->size; i++) {
+//     if (proc_table->buckets[i] != NULL) {
+//         Process *process = (Process *)table_search(proc_table, proc_table->buckets[i]->key);
+//         if (process != NULL) {
+//             printf("%s\n", process->name);
+//             printf("%d\n", process->pid);
+//             printf("%d\n", process->psn.lowLongOfPSN);
+//         }
+//     }
+// }
+
+// app.uiElem = AXUIElementCreateApplication(pid);
+// CFArrayRef window_list = getApplicationWindows(app);
+// CFShow(window_list);
+// CFArrayRef ws = CGWindowListCreate(kCGWindowListExcludeDesktopElements, kCGNullWindowID);
+// CFIndex count = CFArrayGetCount(ws);
+// CFArrayRef ws_info = CGWindowListCreateDescriptionFromArray(ws);
+
+// for (int i = 0; i < count; i++) {
+//     CFDictionaryRef info = (CFTypeRef)CFArrayGetValueAtIndex(ws_info, i);
+//     CFShow(info);
+// }
+// }
 
 void initWindow(Window *w) {
     CFTypeRef size;

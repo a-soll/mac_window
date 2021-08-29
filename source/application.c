@@ -26,7 +26,7 @@ Application *initApplication() {
 
     AXUIElementCopyAttributeNames(a->uiElem, &names);
     AXUIElementCopyAttributeValue(a->uiElem, kAXTitleAttribute, &val);
-    CFStringGetCString(val, a->name, NAME_LEN, kCFStringEncodingUTF8);
+    CFStringGetCString(val, a->name, APP_NAME_MAX, kCFStringEncodingUTF8);
     if (strcmp(a->name, "Code") == 0) {
         CFShow(a->uiElem);
         CFShow(names);

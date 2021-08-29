@@ -2,7 +2,7 @@
 #define BASE_H
 
 #define MAX_DISPLAYS 5
-#define NAME_LEN 30
+#define APP_NAME_MAX 30
 
 // non-struct includes
 #include <CoreFoundation/CoreFoundation.h>

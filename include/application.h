@@ -12,7 +12,7 @@
 typedef struct Application {
     AXUIElementRef uiElem;
     pid_t pid;
-    char name[NAME_LEN];
+    char name[APP_NAME_MAX];
     int windowCount;
 } Application;
 

@@ -1,7 +1,6 @@
 {
     "code-runner.executorMapByGlob": {
-        "main.c": "cd $workspaceRoot && make && $workspaceRoot/mac_window",
-        "(spaces|secret).c": "cd /Users/adam/code/mac_window && clang -o /Users/adam/code/mac_window/using_secret/a.out $fullFileName /usr/local/lib/libobjc.a -framework AppKit -iframework /System/Library/PrivateFrameworks -framework SkyLight && /Users/adam/code/mac_window/using_secret/a.out"
+        "(*.c|*.h)": "cd $workspaceRoot && make && $workspaceRoot/mac_window"
     },
     "code-runner.runInTerminal": true,
     "discord.enabled": true
