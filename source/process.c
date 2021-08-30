@@ -10,11 +10,14 @@ Process *initProcess(ProcessSerialNumber psn) {
     GetProcessInformation(&psn, &process_info);
     GetProcessPID(&psn, &pid);
     CFStringRef name_ref;
-    CopyProcessName(&psn, &name_ref);
-    process = malloc(sizeof(Process));
-    CFStringGetCString(name_ref, process->name, APP_NAME_MAX, kUnicodeUTF8Format);
-    process->pid = pid;
-    process->psn = psn;
+    if (name_ref != NULL) {
+        CopyProcessName(&psn, &name_ref);
+        process = malloc(sizeof(Process));
+        CFStringGetCString(name_ref, process->name, APP_NAME_MAX, kUnicodeUTF8Format);
+        process->pid = pid;
+        process->psn = psn;
+        CFRelease(name_ref);
+    }
     return process;
 }
 
@@ -29,11 +32,13 @@ void removeProcess(ProcessSerialNumber psn) {
 
 void getProcessList() {
     Process *process;
-    proc_table = table_init(125);
+    proc_table->release = NULL;
 
     ProcessSerialNumber psn = {kNoProcess, kNoProcess};
     while (GetNextProcess(&psn) == noErr) {
         process = initProcess(psn);
-        table_insert(proc_table, process->psn.lowLongOfPSN, process);
+        if (process != NULL) {
+            table_insert(proc_table, process->psn.lowLongOfPSN, process);
+        }
     }
 }

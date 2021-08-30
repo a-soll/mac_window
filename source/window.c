@@ -2,6 +2,8 @@
 
 extern int g_connection;
 extern Table *proc_table;
+extern Table *window_table;
+extern Table *app_table;
 
 // returns index of displayList that has current display for given window
 void windowGetDisplay(Window *w) {
@@ -60,6 +62,12 @@ void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
     windowMove(w, newPos.x, newPos.y);
 }
 
+Window *getWindow(uint32_t wid) {
+    Window *window;
+    window = table_search(window_table, wid);
+    return window;
+}
+
 void windowMove(Window *w, double x, double y) {
     CGPoint newPos = {x, y};
     AXError err;
@@ -91,71 +99,50 @@ void windowGetDimensions(Window *w) {
 
 // TODO: this will create windows and applications from the processes
 void getWindowList() {
-    Window *window;
+    Application *application;
+    window_table->release = &releaseWindow;
 
     int i = 0;
     while (i < proc_table->size) {
         if (valid_bucket(proc_table, i)) {
+            CFArrayRef window_list;
             Process *process = (Process *)proc_table->buckets[i]->data;
-            printf("%s\n", process->name);
-            printf("%d\n", process->pid);
-            printf("%d\n", process->psn.lowLongOfPSN);
+            application = initApplication(process);
+            window_list = getApplicationWindows(application);
+            if (window_list != NULL) {
+                initWindow(window_list, application);
+                CFRelease(window_list);
+            }
         }
         i++;
     }
 }
 
-// for (int i = 0; i < proc_table->size; i++) {
-//     if (proc_table->buckets[i] != NULL) {
-//         Process *process = (Process *)table_search(proc_table, proc_table->buckets[i]->key);
-//         if (process != NULL) {
-//             printf("%s\n", process->name);
-//             printf("%d\n", process->pid);
-//             printf("%d\n", process->psn.lowLongOfPSN);
-//         }
-//     }
-// }
-
-// app.uiElem = AXUIElementCreateApplication(pid);
-// CFArrayRef window_list = getApplicationWindows(app);
-// CFShow(window_list);
-// CFArrayRef ws = CGWindowListCreate(kCGWindowListExcludeDesktopElements, kCGNullWindowID);
-// CFIndex count = CFArrayGetCount(ws);
-// CFArrayRef ws_info = CGWindowListCreateDescriptionFromArray(ws);
-
-// for (int i = 0; i < count; i++) {
-//     CFDictionaryRef info = (CFTypeRef)CFArrayGetValueAtIndex(ws_info, i);
-//     CFShow(info);
-// }
-// }
-
-void initWindow(Window *w) {
+void initWindow(CFArrayRef window_list, Application *application) {
     CFTypeRef size;
     CFTypeRef pos;
-    uint32_t wid;
+    CFIndex c = CFArrayGetCount(window_list);
 
-    AXUIElementRef elem = AXUIElementCreateApplication(w->application->pid);
-    CFShow(elem);
-    // w->uiElem = CFArrayGetValueAtIndex(uiElems, i);
-    // AXUIElementCopyAttributeValue(w[i].uiElem, kAXSizeAttribute, &size);
-    // AXUIElementCopyAttributeValue(w[i].uiElem, kAXPositionAttribute, &pos);
-    // // retain uiElem so that uiElems can be freed without losing reference
-    // CFRetain(w[i].uiElem);
-    // AXValueGetValue(size, kAXValueCGSizeType, &w[i].size);
-    // AXValueGetValue(pos, kAXValueCGPointType, &w[i].position);
-    // _AXUIElementGetWindow(w[i].uiElem, &wid);
-    // w[i].wid = wid;
-    // windowGetDisplay(&w[i]);
-    // windowGetDimensions(&w[i]);
-    // CFRelease(size);
-    // CFRelease(pos);
+    for (int i = 0; i < c; i++) {
+        Window *window;
+        window = malloc(sizeof(Window));
+        window->uiElem = CFArrayGetValueAtIndex(window_list, i);
+        CFRetain(window->uiElem);
+        window->application = application;
+        AXUIElementCopyAttributeValue(window->uiElem, kAXSizeAttribute, &size);
+        AXUIElementCopyAttributeValue(window->uiElem, kAXPositionAttribute, &pos);
+        _AXUIElementGetWindow(window->uiElem, &window->wid);
+        AXValueGetValue(size, kAXValueCGSizeType, &window->size);
+        AXValueGetValue(pos, kAXValueCGPointType, &window->position);
+        windowGetDisplay(window);
+        windowGetDimensions(window);
+        table_insert(window_table, window->wid, window);
+        CFRelease(size);
+        CFRelease(pos);
+    }
 }
 
-void releaseWindowList(Window *w, int count) {
-    for (int i = 0; i < count; i++) {
-        if (w[i].uiElem) {
-            CFRelease(w[i].uiElem);
-        }
-    }
-    free(w);
+void releaseWindow(void *window) {
+    Window *win = (Window *)window;
+    CFRelease(win->uiElem);
 }

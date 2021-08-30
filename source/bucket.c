@@ -28,6 +28,9 @@ void bucket_free(Bucket *bucket) {
 void table_free(Table *table) {
     for (int i = 0; i < table->size; i++) {
         if (table->buckets[i] != NULL) {
+            if (table->release != NULL) {
+                table->release(table->buckets[i]->data);
+            }
             bucket_free(table->buckets[i]);
         }
     }
@@ -40,6 +43,9 @@ void table_delete_item(Table *table, int key) {
 
     while (table->buckets[index] != NULL) {
         if (table->buckets[index]->key == key) {
+            if (table->release != NULL) {
+                table->release(table->buckets[index]->data);
+            }
             bucket_free(table->buckets[index]);
             table->buckets[index] = NULL;
             table->count--;

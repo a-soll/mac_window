@@ -2,6 +2,7 @@
 #define APPLICATIONS_H
 
 #include "base.h"
+#include "process.h"
 
 /**Application attributes
  * pid_t pid = pid of app
@@ -16,15 +17,15 @@ typedef struct Application {
     int windowCount;
 } Application;
 
-CFArrayRef getApplicationWindows(Application app);
+CFArrayRef getApplicationWindows(Application *application);
 
-Application *initApplication();
+Application *initApplication(Process *process);
 
 int getOpenApplications(Application **app);
 
 void applicationGetWindowList(Application **app);
 
-void releaseApplication(Application *a, int index);
+void releaseApplication(void *application);
 
 void releaseApplicationList(Application *a, int count);
 

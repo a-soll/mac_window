@@ -34,8 +34,7 @@ typedef struct Window {
 */
 void getWindowList();
 
-// gets windows by their name
-int getWindowByName(Window *w, int count, const char *appName);
+Window *getWindow(uint32_t wid);
 
 // move the given app window
 void windowMove(Window *w, double x, double y);
@@ -45,14 +44,9 @@ void windowResize(Window *w, double width, double height);
 
 void windowMoveByCorner(Window *w, corner_t corner, double x, double y);
 
-// properly free Window list
-void releaseWindowList(Window *w, int count);
+void releaseWindow(void *window);
 
-// free just one window
-void releaseWindow(Window *w);
-
-// populates Window struct
-void initWindow(Window *w);
+void initWindow(CFArrayRef window_list, Application *application);
 
 void windowGetDisplay(Window *w);
 

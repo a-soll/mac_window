@@ -2,7 +2,7 @@
 #define BASE_H
 
 #define MAX_DISPLAYS 5
-#define APP_NAME_MAX 30
+#define APP_NAME_MAX 256
 
 // non-struct includes
 #include <CoreFoundation/CoreFoundation.h>
@@ -10,6 +10,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include "CGSSpaces.h"
 #include <stdio.h>
+#include <string.h>
 
 typedef enum {
     cTopLeft,

@@ -4,8 +4,6 @@
 #include "base.h"
 #include "bucket.h"
 
-Bucket *proc_bucket;
-
 typedef struct Proccess {
     pid_t pid;
     ProcessSerialNumber psn;

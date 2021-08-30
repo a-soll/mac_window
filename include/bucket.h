@@ -12,6 +12,7 @@ typedef struct Table {
     int size;
     int count;
     struct Bucket **buckets;
+    void (*release)(void *);
 } Table;
 
 // used when iterating through a table's buckets
