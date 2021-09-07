@@ -2,6 +2,8 @@
 #define DISPLAY_H
 
 #include "base.h"
+#include "bucket.h"
+#include "space.h"
 
 typedef struct Display {
     bool isMain;
@@ -16,13 +18,12 @@ typedef struct Display {
     CGPoint bottomright;
 } Display;
 
-int displayCount;
-Display *displayList;
-
-int getDisplayList(Display **d);
+void getDisplayList();
 
 void currentDisplay(Display **d);
 
-void releaseDisplayList(Display *d, int count);
+void releaseDisplay(void *display);
+
+uint64_t *spaceListForDisplay(int did);
 
 #endif /* DISPLAY_H */

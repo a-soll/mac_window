@@ -1,65 +1,90 @@
 #include "include/display.h"
 
 extern int g_connection;
+extern Table *display_table;
 
-void getDisplayDimensions(Display *d, CGDirectDisplayID did) {
-    d->did = did;
-    d->width = (double)CGDisplayPixelsWide(d->did);
-    d->height = (double)CGDisplayPixelsHigh(d->did);
+void getDisplayDimensions(Display *display, CGDirectDisplayID did) {
+    display->did = did;
+    display->width = (double)CGDisplayPixelsWide(display->did);
+    display->height = (double)CGDisplayPixelsHigh(display->did);
 
     // get corner coords
-    d->topleft.x = d->origin.x;
-    d->topleft.y = d->origin.y;
+    display->topleft.x = display->origin.x;
+    display->topleft.y = display->origin.y;
 
-    d->topright.x = d->width + d->origin.x;
-    d->topright.y = d->origin.y;
+    display->topright.x = display->width + display->origin.x;
+    display->topright.y = display->origin.y;
 
-    d->bottomleft.x = d->origin.x;
-    d->bottomright.y = d->origin.y + d->height;
+    display->bottomleft.x = display->origin.x;
+    display->bottomright.y = display->origin.y + display->height;
 
-    d->bottomright.x = d->width + d->origin.x;
-    d->bottomright.y = d->height + d->origin.y;
+    display->bottomright.x = display->width + display->origin.x;
+    display->bottomright.y = display->height + display->origin.y;
 }
 
-int getDisplayList(Display **d) {
-    Display *display;
+uint64_t *spaceListForDisplay(int did) {
+    CFUUIDRef uuid_ref = CGDisplayCreateUUIDFromDisplayID(did);
+    int count;
+    CFStringRef uuid_str = CFUUIDCreateString(NULL, uuid_ref);
+    // array of all displays containing an array of spaces for that display
+    CFArrayRef spaces = SLSCopyManagedDisplaySpaces(g_connection);
+    uint64_t *sid_list;
+    int space_count = CFArrayGetCount(spaces);
+
+    for (int i = 0; i <= space_count; i++) {
+        CFDictionaryRef display_ref = CFArrayGetValueAtIndex(spaces, i);
+        CFStringRef identifier = CFDictionaryGetValue(display_ref, CFSTR("Display Identifier"));
+
+        if (!CFEqual(uuid_str, identifier)) {
+            continue;
+        }
+
+        CFArrayRef spaces_ref = CFDictionaryGetValue(display_ref, CFSTR("Spaces"));
+        count = CFArrayGetCount(spaces_ref);
+        // populate list of space IDs
+        sid_list = malloc(count * sizeof(uint64_t));
+        for (int i = 0; i < count; i++) {
+            CFNumberRef temp_sid;
+            CFDictionaryRef space_at_ind = CFArrayGetValueAtIndex(spaces_ref, i);
+            temp_sid = (CFNumberRef)CFDictionaryGetValue(space_at_ind, CFSTR("ManagedSpaceID"));
+            CFNumberGetValue(temp_sid, kCFNumberSInt64Type, (void *)&(sid_list)[i]);
+            CFRelease(temp_sid);
+        }
+        break;
+    }
+    CFRelease(spaces);
+    CFRelease(uuid_ref);
+    CFRelease(uuid_str);
+    return sid_list;
+}
+
+void getDisplayList() {
+    display_table->release = &releaseDisplay;
     CFArrayRef display_list = SLSCopyManagedDisplays(g_connection);
     uint32_t count = CFArrayGetCount(display_list);
     CGDirectDisplayID ids[count];
     CGGetActiveDisplayList(count, ids, &count);
 
-    // reallocate on consecutive calls
-    if (*d == NULL) {
-        display = malloc(count * sizeof(Display));
-    } else {
-        display = realloc(*d, count * sizeof(Display));
-    }
-
     for (int i = 0; i < count; i++) {
-        Display d;
+        Display *display;
+        display = malloc(sizeof(Display));
         CGDirectDisplayID curId = ids[i];
         CGRect origin = CGDisplayBounds(curId);
-        d.origin = origin.origin;
+        display->origin = origin.origin;
         if (curId == CGMainDisplayID()) {
-            d.isMain = true;
+            display->isMain = true;
         } else {
-            d.isMain = false;
+            display->isMain = false;
         }
-        d.uuid = CFArrayGetValueAtIndex(display_list, i);
-        getDisplayDimensions(&d, curId);
-        CFRetain(d.uuid);
-        display[i] = d;
+        display->uuid = CFArrayGetValueAtIndex(display_list, i);
+        getDisplayDimensions(display, curId);
+        CFRetain(display->uuid);
+        table_insert(display_table, display->did, (void *)display);
     }
     CFRelease(display_list);
-    *d = display;
-    return (int)count;
 }
 
-void releaseDisplayList(Display *d, int count) {
-    for (int i = 0; i < count; i++) {
-        if (d[i].uuid != NULL) {
-            CFRelease(d[i].uuid);
-        }
-    }
-    free(d);
+void releaseDisplay(void *display) {
+    Display *dis = (Display *)display;
+    CFRelease(dis->uuid);
 }

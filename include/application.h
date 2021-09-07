@@ -15,6 +15,7 @@ typedef struct Application {
     pid_t pid;
     char name[APP_NAME_MAX];
     int windowCount;
+    AXObserverRef observer;
 } Application;
 
 CFArrayRef getApplicationWindows(Application *application);

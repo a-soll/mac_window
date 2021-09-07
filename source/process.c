@@ -13,6 +13,7 @@ Process *initProcess(ProcessSerialNumber psn) {
     if (name_ref != NULL) {
         CopyProcessName(&psn, &name_ref);
         process = malloc(sizeof(Process));
+        process->xpc = process_info.processType == 'XPC!';
         CFStringGetCString(name_ref, process->name, APP_NAME_MAX, kUnicodeUTF8Format);
         process->pid = pid;
         process->psn = psn;
@@ -38,7 +39,9 @@ void getProcessList() {
     while (GetNextProcess(&psn) == noErr) {
         process = initProcess(psn);
         if (process != NULL) {
-            table_insert(proc_table, process->psn.lowLongOfPSN, process);
+            if (!process->xpc) {
+                table_insert(proc_table, process->psn.lowLongOfPSN, process);
+            }
         }
     }
 }

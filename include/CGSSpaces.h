@@ -9,15 +9,6 @@
 #define kCGSIgnoreForEventsTagBit (1 << 9)
 #define kCGSDisableShadowTagBit   (1 << 3)
 
-// const CFStringRef kAXEnhancedUserInterface = CFSTR("AXEnhancedUserInterface");
-
-// #define AX_ENHANCED_UI_WORKAROUND(r, c) \
-// {\
-//     bool eui = ax_enhanced_userinterface(r); \
-//     if (eui) AXUIElementSetAttributeValue(r, kAXEnhancedUserInterface, kCFBooleanFalse); \
-//     c \
-//     if (eui) AXUIElementSetAttributeValue(r, kAXEnhancedUserInterface, kCFBooleanTrue); \
-// }
 CGDirectDisplayID convertUUIDtoID(char* uuid);
 void CGSConfigureDisplayMode(CGDisplayConfigRef config, CGDirectDisplayID display, int modeNum);
 void CGSGetCurrentDisplayMode(CGDirectDisplayID display, int* modeNum);

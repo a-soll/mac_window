@@ -37,10 +37,10 @@ void getWindowList();
 Window *getWindow(uint32_t wid);
 
 // move the given app window
-void windowMove(Window *w, double x, double y);
+CGPoint windowMove(Window *w, double x, double y);
 
 // resize given app window
-void windowResize(Window *w, double width, double height);
+CGSize windowResize(Window *w, double width, double height);
 
 void windowMoveByCorner(Window *w, corner_t corner, double x, double y);
 

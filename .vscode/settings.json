@@ -1,5 +1,6 @@
 {
     "code-runner.executorMapByGlob": {
+        "spaces.c": "clang -o $workspaceRoot/using_secret/space -I/Users/adam/code/mac_window $workspaceRoot/using_secret/spaces.c -iframework /System/Library/PrivateFrameworks -framework AppKit -framework SkyLight && $workspaceRoot/using_secret/space",
         "(*.c|*.h)": "cd $workspaceRoot && make && $workspaceRoot/mac_window"
     },
     "code-runner.runInTerminal": true,

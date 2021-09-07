@@ -92,13 +92,15 @@ void table_insert(Table *table, int key, void *data) {
     int index = hashCode(key, table->size);
     Bucket *bucket = init_bucket(key, data);
 
-    if (table->count == table->size) {
-        table_resize(table);
+    if (table_search(table, key) == NULL) {
+        if (table->count == table->size) {
+            table_resize(table);
+        }
+        while (table->buckets[index] != NULL) {
+            ++index;
+            index %= table->size;
+        }
+        table->buckets[index] = bucket;
+        table->count++;
     }
-    while (table->buckets[index] != NULL) {
-        ++index;
-        index %= table->size;
-    }
-    table->buckets[index] = bucket;
-    table->count++;
 }

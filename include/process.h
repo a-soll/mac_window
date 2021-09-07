@@ -8,6 +8,7 @@ typedef struct Proccess {
     pid_t pid;
     ProcessSerialNumber psn;
     char name[APP_NAME_MAX];
+    bool xpc;
 } Process;
 
 void getProcessList();

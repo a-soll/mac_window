@@ -6,27 +6,25 @@ extern Table *window_table;
 extern Table *app_table;
 
 // returns index of displayList that has current display for given window
-void windowGetDisplay(Window *w) {
-    uint32_t wid = w->wid;
-    CFStringRef displayString = SLSCopyManagedDisplayForWindow(g_connection, wid);
-    for (int i = 0; i < displayCount; i++) {
-        if (CFStringCompare(displayString, displayList[i].uuid, kCFCompareEqualTo) == 0) {
-            w->displayIndex = i;
-        }
-    }
-    CFRelease(displayString);
-}
+// void windowGetDisplay(Window *w) {
+//     uint32_t wid = w->wid;
+//     CFStringRef displayString = SLSCopyManagedDisplayForWindow(g_connection, wid);
+//     for (int i = 0; i < displayCount; i++) {
+//         if (CFStringCompare(displayString, displayList[i].uuid, kCFCompareEqualTo) == 0) {
+//             w->displayIndex = i;
+//         }
+//     }
+//     CFRelease(displayString);
+// }
 
-void windowResize(Window *w, double width, double height) {
+CGSize windowResize(Window *w, double width, double height) {
     CGSize newSize = {width, height};
     AXError err;
     CFTypeRef size = (CFTypeRef)(AXValueCreate(kAXValueCGSizeType, (const void *)&newSize));
 
     err = AXUIElementSetAttributeValue(w->uiElem, kAXSizeAttribute, size);
-    if (err == kAXErrorSuccess) {
-        w->size = newSize;
-    }
     CFRelease(size);
+    return newSize;
 }
 
 void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
@@ -68,22 +66,17 @@ Window *getWindow(uint32_t wid) {
     return window;
 }
 
-void windowMove(Window *w, double x, double y) {
+CGPoint windowMove(Window *w, double x, double y) {
     CGPoint newPos = {x, y};
     AXError err;
     CFTypeRef pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPos));
 
     err = AXUIElementSetAttributeValue(w->uiElem, kAXPositionAttribute, pos);
-    if (err == kAXErrorSuccess) {
-        w->position = newPos;
-        windowGetDisplay(w);
-    }
     CFRelease(pos);
+    return newPos;
 }
 
 void windowGetDimensions(Window *w) {
-    Display *d = &displayList[w->displayIndex];
-
     w->topleft.x = w->position.x;
     w->topleft.y = w->position.y;
 
@@ -118,6 +111,11 @@ void getWindowList() {
     }
 }
 
+// TODO: move the window that's touching the moving window's edge
+void windowIsResizing(AXObserverRef observer, AXUIElementRef element, CFStringRef notifName, void *contextData) {
+    Window *window = (Window *)contextData;
+}
+
 void initWindow(CFArrayRef window_list, Application *application) {
     CFTypeRef size;
     CFTypeRef pos;
@@ -129,13 +127,16 @@ void initWindow(CFArrayRef window_list, Application *application) {
         window->uiElem = CFArrayGetValueAtIndex(window_list, i);
         CFRetain(window->uiElem);
         window->application = application;
+        AXError err = AXObserverCreate(application->pid, windowIsResizing, &application->observer);
+        AXError obser = AXObserverAddNotification(application->observer, application->uiElem, kAXResizedNotification, window);
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), AXObserverGetRunLoopSource(application->observer), kCFRunLoopDefaultMode);
         AXUIElementCopyAttributeValue(window->uiElem, kAXSizeAttribute, &size);
         AXUIElementCopyAttributeValue(window->uiElem, kAXPositionAttribute, &pos);
         _AXUIElementGetWindow(window->uiElem, &window->wid);
         AXValueGetValue(size, kAXValueCGSizeType, &window->size);
         AXValueGetValue(pos, kAXValueCGPointType, &window->position);
-        windowGetDisplay(window);
-        windowGetDimensions(window);
+        // windowGetDisplay(window);
+        // windowGetDimensions(window);
         table_insert(window_table, window->wid, window);
         CFRelease(size);
         CFRelease(pos);
