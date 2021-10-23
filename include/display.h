@@ -24,6 +24,6 @@ void currentDisplay(Display **d);
 
 void releaseDisplay(void *display);
 
-uint64_t *spaceListForDisplay(int did);
+int spaceListForDisplay(int did, uint64_t **sid_list);
 
 #endif /* DISPLAY_H */

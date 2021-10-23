@@ -111,14 +111,30 @@ void getWindowList() {
     }
 }
 
-// TODO: move the window that's touching the moving window's edge
-void windowIsResizing(AXObserverRef observer, AXUIElementRef element, CFStringRef notifName, void *contextData) {
-    Window *window = (Window *)contextData;
+void windowCallback(AXObserverRef observer, AXUIElementRef element, CFStringRef notifName, void *data) {
+    Window *window = data;
+
+    if (CFEqual(kAXWindowMiniaturizedNotification, notifName)) {
+        window->isMinimized = true;
+    } else if (CFEqual(kAXWindowDeminiaturizedNotification, notifName)) {
+        window->isMinimized = false;
+    }
+}
+
+void windowAddObservers(Window *window) {
+    Application *application = window->application;
+    int count = arrayCount(notifs);
+    AXError err = AXObserverCreate(application->pid, windowCallback, &application->observer);
+
+    for (int i = 0; i < count; i++) {
+        AXError obser = AXObserverAddNotification(application->observer, application->uiElem, CCFSTRING(notifs[i]), window);
+    }
 }
 
 void initWindow(CFArrayRef window_list, Application *application) {
     CFTypeRef size;
     CFTypeRef pos;
+    CFTypeRef mini;
     CFIndex c = CFArrayGetCount(window_list);
 
     for (int i = 0; i < c; i++) {
@@ -127,14 +143,15 @@ void initWindow(CFArrayRef window_list, Application *application) {
         window->uiElem = CFArrayGetValueAtIndex(window_list, i);
         CFRetain(window->uiElem);
         window->application = application;
-        AXError err = AXObserverCreate(application->pid, windowIsResizing, &application->observer);
-        AXError obser = AXObserverAddNotification(application->observer, application->uiElem, kAXResizedNotification, window);
+        windowAddObservers(window);
         CFRunLoopAddSource(CFRunLoopGetCurrent(), AXObserverGetRunLoopSource(application->observer), kCFRunLoopDefaultMode);
         AXUIElementCopyAttributeValue(window->uiElem, kAXSizeAttribute, &size);
         AXUIElementCopyAttributeValue(window->uiElem, kAXPositionAttribute, &pos);
+        AXUIElementCopyAttributeValue(window->uiElem, kAXMinimizedAttribute, &mini);
         _AXUIElementGetWindow(window->uiElem, &window->wid);
         AXValueGetValue(size, kAXValueCGSizeType, &window->size);
         AXValueGetValue(pos, kAXValueCGPointType, &window->position);
+        window->isMinimized = CFBooleanGetValue(mini);
         // windowGetDisplay(window);
         // windowGetDimensions(window);
         table_insert(window_table, window->wid, window);

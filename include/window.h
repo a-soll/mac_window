@@ -6,6 +6,7 @@
 #include "display.h"
 #include "bucket.h"
 #include "process.h"
+#include "c_callback.h"
 
 /**Window attributes
  * CGPoint position = current position
@@ -25,7 +26,15 @@ typedef struct Window {
     CGPoint topleft;
     CGPoint bottomright;
     CGPoint bottomleft;
+    bool isMinimized;
 } Window;
+
+// actual CSTR names of notifs
+static const char* const notifs[] = {
+    "AXResized",
+    "AXWindowDeminiaturized",
+    "AXWindowMiniaturized"
+};
 
 /*!
     @function getWindowList

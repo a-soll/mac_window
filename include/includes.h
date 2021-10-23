@@ -6,5 +6,6 @@
 #include "display.h"
 #include "process.h"
 #include "window.h"
+#include "bundle.h"
 
 #endif /* INCLUDES_H */

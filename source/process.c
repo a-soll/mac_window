@@ -34,13 +34,16 @@ void removeProcess(ProcessSerialNumber psn) {
 void getProcessList() {
     Process *process;
     proc_table->release = NULL;
-
     ProcessSerialNumber psn = {kNoProcess, kNoProcess};
+
     while (GetNextProcess(&psn) == noErr) {
         process = initProcess(psn);
         if (process != NULL) {
             if (!process->xpc) {
-                table_insert(proc_table, process->psn.lowLongOfPSN, process);
+                table_insert(proc_table, process->psn.lowLongOfPSN, (void *)process);
+            }
+            else {
+                free(process);
             }
         }
     }

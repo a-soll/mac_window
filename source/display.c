@@ -22,13 +22,12 @@ void getDisplayDimensions(Display *display, CGDirectDisplayID did) {
     display->bottomright.y = display->height + display->origin.y;
 }
 
-uint64_t *spaceListForDisplay(int did) {
+int spaceListForDisplay(int did, uint64_t **sid_list) {
     CFUUIDRef uuid_ref = CGDisplayCreateUUIDFromDisplayID(did);
     int count;
     CFStringRef uuid_str = CFUUIDCreateString(NULL, uuid_ref);
     // array of all displays containing an array of spaces for that display
     CFArrayRef spaces = SLSCopyManagedDisplaySpaces(g_connection);
-    uint64_t *sid_list;
     int space_count = CFArrayGetCount(spaces);
 
     for (int i = 0; i <= space_count; i++) {
@@ -42,12 +41,12 @@ uint64_t *spaceListForDisplay(int did) {
         CFArrayRef spaces_ref = CFDictionaryGetValue(display_ref, CFSTR("Spaces"));
         count = CFArrayGetCount(spaces_ref);
         // populate list of space IDs
-        sid_list = malloc(count * sizeof(uint64_t));
+        *sid_list = malloc(count * sizeof(uint64_t));
         for (int i = 0; i < count; i++) {
             CFNumberRef temp_sid;
             CFDictionaryRef space_at_ind = CFArrayGetValueAtIndex(spaces_ref, i);
             temp_sid = (CFNumberRef)CFDictionaryGetValue(space_at_ind, CFSTR("ManagedSpaceID"));
-            CFNumberGetValue(temp_sid, kCFNumberSInt64Type, (void *)&(sid_list)[i]);
+            CFNumberGetValue(temp_sid, kCFNumberSInt64Type, (void *)&(*sid_list)[i]);
             CFRelease(temp_sid);
         }
         break;
@@ -55,7 +54,7 @@ uint64_t *spaceListForDisplay(int did) {
     CFRelease(spaces);
     CFRelease(uuid_ref);
     CFRelease(uuid_str);
-    return sid_list;
+    return count;
 }
 
 void getDisplayList() {
