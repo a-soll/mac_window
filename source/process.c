@@ -39,7 +39,7 @@ void getProcessList() {
     while (GetNextProcess(&psn) == noErr) {
         process = initProcess(psn);
         if (process != NULL) {
-            if (!process->xpc) {
+            if (!process->xpc && strcmp(process->name, "Finder") != 0 && strcmp(process->name, "Dock") != 0) {
                 table_insert(proc_table, process->psn.lowLongOfPSN, (void *)process);
             }
             else {

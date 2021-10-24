@@ -72,7 +72,9 @@ extern CGError _SLPSSetFrontProcessWithOptions(ProcessSerialNumber *psn, uint32_
 extern CGError SLPSPostEventRecordTo(ProcessSerialNumber *psn, uint8_t *bytes);
 extern OSStatus SLSFindWindowByGeometry(int cid, int zero, int one, int zero_again, CGPoint *screen_point, CGPoint *window_point, uint32_t *wid, int *wcid);
 extern CGError SLSGetCurrentCursorLocation(int cid, CGPoint *point);
-
+/// Gets a list of windows owned by `targetCID`.
+CG_EXTERN CGError CGSGetWindowList(int cid, int targetCID, int count, uint32_t *list, int *outCount);
+CG_EXTERN CFArrayRef CGSSpaceCopyOwners(int cid, uint64_t sid);
 #if 0
 extern CFArrayRef _LSCopyApplicationArrayInFrontToBackOrder(int negative_one, int one);
 extern void _LSASNExtractHighAndLowParts(const void *asn, uint32_t *high, uint32_t *low);

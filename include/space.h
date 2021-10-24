@@ -4,6 +4,7 @@
 #include "base.h"
 #include "display.h"
 #include "bucket.h"
+#include "application.h"
 
 typedef struct Space {
     char label[256];
@@ -11,5 +12,8 @@ typedef struct Space {
 } Space;
 
 void initSpaceList();
+// return all window IDs for given space ID
+CFArrayRef spaceWindows(uint64_t sid);
+uint64_t getActiveSpace();
 
 #endif /* SPACE_H */

@@ -4,6 +4,7 @@ extern int g_connection;
 extern Table *proc_table;
 extern Table *window_table;
 extern Table *app_table;
+extern Table *space_table;
 
 // returns index of displayList that has current display for given window
 // void windowGetDisplay(Window *w) {
@@ -76,6 +77,27 @@ CGPoint windowMove(Window *w, double x, double y) {
     return newPos;
 }
 
+void windowGetSize(Window *window) {
+    CFTypeRef size;
+    AXUIElementCopyAttributeValue(window->uiElem, kAXSizeAttribute, &size);
+    AXValueGetValue(size, kAXValueCGSizeType, &window->size);
+    CFRelease(size);
+}
+
+void windowGetPosition(Window *window) {
+    CFTypeRef pos;
+    AXUIElementCopyAttributeValue(window->uiElem, kAXPositionAttribute, &pos);
+    AXValueGetValue(pos, kAXValueCGPointType, &window->position);
+    CFRelease(pos);
+}
+
+void windowIsMinimized(Window *window) {
+    CFTypeRef mini;
+    AXUIElementCopyAttributeValue(window->uiElem, kAXMinimizedAttribute, &mini);
+    window->isMinimized = CFBooleanGetValue(mini);
+    CFRelease(mini);
+}
+
 void windowGetDimensions(Window *w) {
     w->topleft.x = w->position.x;
     w->topleft.y = w->position.y;
@@ -90,24 +112,68 @@ void windowGetDimensions(Window *w) {
     w->bottomright.y = w->bottomleft.y;
 }
 
-// TODO: this will create windows and applications from the processes
-void getWindowList() {
-    Application *application;
-    window_table->release = &releaseWindow;
+// get pid of owner for wid in array
+pid_t getWindowOwner(CFArrayRef window_ref, int ind) {
+    int wid = getNumberFromArray(window_ref, ind);
+    int wcid; // window connection id
+    pid_t pid;
+    SLSGetWindowOwner(g_connection, wid, &wcid);
+    SLSConnectionGetPID(wcid, &pid);
+    return pid;
+}
 
-    int i = 0;
-    while (i < proc_table->size) {
-        if (valid_bucket(proc_table, i)) {
-            CFArrayRef window_list;
-            Process *process = (Process *)proc_table->buckets[i]->data;
-            application = initApplication(process);
-            window_list = getApplicationWindows(application);
-            if (window_list != NULL) {
-                initWindow(window_list, application);
-                CFRelease(window_list);
+uint64_t currentSpaceForWindow(Window *window) {
+    int sid = 0;
+    CFArrayRef window_list_ref = CFArrayFromNumbers(&window->wid, sizeof(uint32_t), 1, kCFNumberSInt32Type);
+    CFArrayRef space_list_ref = SLSCopySpacesForWindows(g_connection, 0x7, window_list_ref);
+    int count = CFArrayGetCount(space_list_ref);
+    if (count) {
+        sid = getNumberFromArray(space_list_ref, 0);
+    }
+    return (uint64_t)sid;
+}
+
+void getWindowList() {
+    window_table->release = &releaseWindow;
+    uint64_t cur_space = getActiveSpace();
+
+    // get list of windows for each space
+    for (int j = 0; j < space_table->size; j++) {
+        if (valid_bucket(space_table, j)) {
+            Space *space = (Space *)space_table->buckets[j]->data;
+            CFArrayRef window_ref;
+            window_ref = spaceWindows(space->sid);
+            int count = CFArrayGetCount(window_ref);
+
+            // get owner pid for each window
+            for (int i = 0; i < count; i++) {
+                pid_t pid = getWindowOwner(window_ref, i);
+                int wid = getNumberFromArray(window_ref, i);
+                Application *application = (Application *)table_search(app_table, pid);
+                if (!application) {
+                    break;
+                }
+                CFArrayRef app_windows;
+                if (space->sid != cur_space) {
+                    // hide application and unhide to avoid flashing app window when assigning to managed space
+                    applicationHide(application);
+                    SLSProcessAssignToSpace(g_connection, application->pid, cur_space);
+                    app_windows = getApplicationWindows(application);
+                    if (!table_search(window_table, wid)) {
+                        initWindow(app_windows, application);
+                    }
+                    SLSProcessAssignToSpace(g_connection, application->pid, space->sid);
+                    applicationUnHide(application);
+                } else {
+                    app_windows = getApplicationWindows(application);
+                    if (app_windows != NULL && !table_search(window_table, wid)) {
+                        initWindow(app_windows, application);
+                    }
+                }
+                CFRelease(app_windows);
             }
+            CFRelease(window_ref);
         }
-        i++;
     }
 }
 
@@ -116,8 +182,15 @@ void windowCallback(AXObserverRef observer, AXUIElementRef element, CFStringRef 
 
     if (CFEqual(kAXWindowMiniaturizedNotification, notifName)) {
         window->isMinimized = true;
-    } else if (CFEqual(kAXWindowDeminiaturizedNotification, notifName)) {
+    }
+    if (CFEqual(kAXWindowDeminiaturizedNotification, notifName)) {
         window->isMinimized = false;
+    }
+    if (CFEqual(kAXResizedNotification, notifName)) {
+        // placeholder
+    }
+    if (CFEqual(kAXWindowResizedNotification, notifName)) {
+        windowGetSize(window);
     }
 }
 
@@ -127,36 +200,30 @@ void windowAddObservers(Window *window) {
     AXError err = AXObserverCreate(application->pid, windowCallback, &application->observer);
 
     for (int i = 0; i < count; i++) {
-        AXError obser = AXObserverAddNotification(application->observer, application->uiElem, CCFSTRING(notifs[i]), window);
+        CFStringRef notif = CCFSTRING(notifs[i]);
+        AXError obser = AXObserverAddNotification(application->observer, application->uiElem, notif, window);
+        CFRelease(notif);
     }
 }
 
+// window_list is axuielements of windows for the app
 void initWindow(CFArrayRef window_list, Application *application) {
-    CFTypeRef size;
-    CFTypeRef pos;
-    CFTypeRef mini;
     CFIndex c = CFArrayGetCount(window_list);
 
     for (int i = 0; i < c; i++) {
         Window *window;
         window = malloc(sizeof(Window));
         window->uiElem = CFArrayGetValueAtIndex(window_list, i);
+        _AXUIElementGetWindow(window->uiElem, &window->wid);
         CFRetain(window->uiElem);
         window->application = application;
         windowAddObservers(window);
         CFRunLoopAddSource(CFRunLoopGetCurrent(), AXObserverGetRunLoopSource(application->observer), kCFRunLoopDefaultMode);
-        AXUIElementCopyAttributeValue(window->uiElem, kAXSizeAttribute, &size);
-        AXUIElementCopyAttributeValue(window->uiElem, kAXPositionAttribute, &pos);
-        AXUIElementCopyAttributeValue(window->uiElem, kAXMinimizedAttribute, &mini);
-        _AXUIElementGetWindow(window->uiElem, &window->wid);
-        AXValueGetValue(size, kAXValueCGSizeType, &window->size);
-        AXValueGetValue(pos, kAXValueCGPointType, &window->position);
-        window->isMinimized = CFBooleanGetValue(mini);
-        // windowGetDisplay(window);
+        windowGetSize(window);
+        windowGetPosition(window);
+        windowIsMinimized(window);
         // windowGetDimensions(window);
         table_insert(window_table, window->wid, window);
-        CFRelease(size);
-        CFRelease(pos);
     }
 }
 

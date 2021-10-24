@@ -1,5 +1,7 @@
 {
     "code-runner.executorMapByGlob": {
+        "space2.c": "clang -o $workspaceRoot/using_secret/space -I/Users/adam/code/mac_window $workspaceRoot/using_secret/space2.c -iframework /System/Library/PrivateFrameworks -framework AppKit -framework SkyLight && $workspaceRoot/using_secret/space",
+        "spaces3.c": "clang -o $workspaceRoot/using_secret/space -I/Users/adam/code/mac_window $workspaceRoot/using_secret/spaces3.c -iframework /System/Library/PrivateFrameworks -framework AppKit -framework SkyLight && $workspaceRoot/using_secret/space",
         "spaces.c": "clang -o $workspaceRoot/using_secret/space -I/Users/adam/code/mac_window $workspaceRoot/using_secret/spaces.c -iframework /System/Library/PrivateFrameworks -framework AppKit -framework SkyLight && $workspaceRoot/using_secret/space",
         "(*.c|*.h)": "cd $workspaceRoot && make && $workspaceRoot/mac_window"
     },

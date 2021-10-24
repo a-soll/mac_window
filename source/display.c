@@ -57,6 +57,12 @@ int spaceListForDisplay(int did, uint64_t **sid_list) {
     return count;
 }
 
+CFStringRef getDisplayForWindowId(uint64_t wid) {
+    CFStringRef duuid;
+    duuid = SLSCopyManagedDisplayForWindow(g_connection, wid);
+    return duuid;
+}
+
 void getDisplayList() {
     display_table->release = &releaseDisplay;
     CFArrayRef display_list = SLSCopyManagedDisplays(g_connection);

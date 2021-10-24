@@ -12,11 +12,8 @@ typedef struct Proccess {
 } Process;
 
 void getProcessList();
-
 Process *getProcess(ProcessSerialNumber psn);
-
 void removeProcess(ProcessSerialNumber psn);
-
 Process *initProcess(ProcessSerialNumber psn);
 
 #endif /* PROCESS_H */
