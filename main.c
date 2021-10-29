@@ -34,20 +34,15 @@ int main() {
 
     for (int i = 0; i < window_table->size; i++) {
         if (valid_bucket(window_table, i)) {
-            CFArrayRef stuff;
             Window *window = window_table->buckets[i]->data;
+            uint64_t sid = currentSpaceForWindow(window);
             printf("WID: %d\n", window->wid);
             printf("Name: %s\n", window->application->name);
             CFShow(window->uiElem);
-            uint64_t sid = currentSpaceForWindow(window);
-            if (sid != getActiveSpace()){
-                SLSProcessAssignToSpace(g_connection, window->application->pid, getActiveSpace());
-            }
-            printf("%llu\n", sid);
+            printf("Height: %f\n", window->size.height);
+            printf("SID: %llu\n", sid);
+            printf("Mini? %d\n", window->isMinimized);
             printf("\n");
-            // printf("Height: %f\n", window->size.height);
-            // printf("Hidden? %d\n", applicationIsHidden(window->application));
-            // printf("Mini? %d\n", window->isMinimized);
         }
     }
 

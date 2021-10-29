@@ -45,5 +45,7 @@ double windowMoveLeftEdgeFlush(Window *w);
 void windowGetSize(Window *window);
 void windowGetPosition(Window *window);
 uint64_t currentSpaceForWindow(Window *window);
+void moveWindowToSpace(uint32_t wid, uint64_t sid);
+AXError setFocusedWindow(Application *application, uint32_t wid);
 
 #endif /* WINDOWS_H */

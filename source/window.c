@@ -18,6 +18,12 @@ extern Table *space_table;
 //     CFRelease(displayString);
 // }
 
+void moveWindowToSpace(uint32_t wid, uint64_t sid) {
+    CFArrayRef wids = CFArrayFromNumbers(&wid, sizeof(int), 1, kCFNumberSInt32Type);
+    SLSMoveWindowsToManagedSpace(g_connection, wids, sid);
+    CFRelease(wids);
+}
+
 CGSize windowResize(Window *w, double width, double height) {
     CGSize newSize = {width, height};
     AXError err;
@@ -130,12 +136,24 @@ uint64_t currentSpaceForWindow(Window *window) {
     if (count) {
         sid = getNumberFromArray(space_list_ref, 0);
     }
+    CFRelease(window_list_ref);
+    CFRelease(space_list_ref);
     return (uint64_t)sid;
+}
+
+AXError setFocusedWindow(Application *application, uint32_t wid) {
+    Window *window = table_search(window_table, wid);
+    return AXUIElementSetAttributeValue(application->uiElem, kAXFocusedWindowAttribute, window->uiElem);
 }
 
 void getWindowList() {
     window_table->release = &releaseWindow;
     uint64_t cur_space = getActiveSpace();
+    ProcessSerialNumber front_psn;
+    _SLPSGetFrontProcess(&front_psn);
+    Process *front_proc = table_search(proc_table, front_psn.lowLongOfPSN);
+    Application *front_app = table_search(app_table, front_proc->pid);
+    uint32_t front_wid = getApplicationFocusedWindow(front_app);
 
     // get list of windows for each space
     for (int j = 0; j < space_table->size; j++) {
@@ -154,16 +172,27 @@ void getWindowList() {
                     break;
                 }
                 CFArrayRef app_windows;
+                /**In order to create AXUIElement for windows from other spaces,
+                 * we need to interact with the process by invoking hide. we then unhide it.
+                 * To avoid flashing the currently focused app, we simply move the windows from other
+                 * spaces to the current one.
+                 */
                 if (space->sid != cur_space) {
-                    // hide application and unhide to avoid flashing app window when assigning to managed space
-                    applicationHide(application);
-                    SLSProcessAssignToSpace(g_connection, application->pid, cur_space);
+                    bool cur_app = false;
+                    if (application->pid == front_app->pid) {
+                        moveWindowToSpace(wid, cur_space);
+                        cur_app = true;
+                    } else {
+                        applicationHide(application);
+                    }
                     app_windows = getApplicationWindows(application);
                     if (!table_search(window_table, wid)) {
                         initWindow(app_windows, application);
                     }
-                    SLSProcessAssignToSpace(g_connection, application->pid, space->sid);
                     applicationUnHide(application);
+                    if (cur_app) {
+                        moveWindowToSpace(wid, space->sid);
+                    }
                 } else {
                     app_windows = getApplicationWindows(application);
                     if (app_windows != NULL && !table_search(window_table, wid)) {
@@ -223,7 +252,17 @@ void initWindow(CFArrayRef window_list, Application *application) {
         windowGetPosition(window);
         windowIsMinimized(window);
         // windowGetDimensions(window);
-        table_insert(window_table, window->wid, window);
+
+        /**have to double check window table here because multiple windows for apps
+         * will pass the fist check in getWindowList()
+         */
+        if (!table_search(window_table, window->wid)) {
+            table_insert(window_table, window->wid, window);
+        }
+        else {
+            CFRelease(window->uiElem);
+            free(window);
+        }
     }
 }
 

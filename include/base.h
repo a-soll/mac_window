@@ -4,6 +4,9 @@
 #define MAX_DISPLAYS 5
 #define APP_NAME_MAX 256
 #define arrayCount(a) (sizeof((a)) / sizeof(*(a)))
+#define kCPSAllWindows    0x100
+#define kCPSUserGenerated 0x200
+#define kCPSNoWindows     0x400
 
 // non-struct includes
 #include <CoreFoundation/CoreFoundation.h>
