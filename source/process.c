@@ -33,7 +33,6 @@ void removeProcess(ProcessSerialNumber psn) {
 
 void getProcessList() {
     Process *process;
-    proc_table->release = NULL;
     ProcessSerialNumber psn = {kNoProcess, kNoProcess};
 
     while (GetNextProcess(&psn) == noErr) {

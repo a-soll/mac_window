@@ -24,7 +24,7 @@ int main() {
     space_table = table_init(5);
     proc_table = table_init(125);
     app_table = table_init(125);
-    window_table = table_init(125);
+    window_table = table_init(20);
 
     getDisplayList();
     initSpaceList();

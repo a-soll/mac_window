@@ -81,6 +81,7 @@ Table *table_init(int size) {
     Table *table = (Table *)malloc(sizeof(Table));
     table->size = size;
     table->count = 0;
+    table->release = NULL;
     table->buckets = (Bucket **)calloc(table->size, sizeof(Bucket *));
     for (int i = 0; i < table->size; i++) {
         table->buckets[i] = NULL;
