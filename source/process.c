@@ -3,7 +3,7 @@
 extern Table *proc_table;
 
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-Process *initProcess(ProcessSerialNumber psn) {
+Process *init_process(ProcessSerialNumber psn) {
     Process *process;
     pid_t pid;
     ProcessInfoRec process_info = {.processInfoLength = sizeof(ProcessInfoRec)};
@@ -22,21 +22,21 @@ Process *initProcess(ProcessSerialNumber psn) {
     return process;
 }
 
-Process *getProcess(ProcessSerialNumber psn) {
+Process *get_process(ProcessSerialNumber psn) {
     Process *process = (Process *)table_search(proc_table, psn.lowLongOfPSN);
     return process;
 }
 
-void removeProcess(ProcessSerialNumber psn) {
+void remove_process(ProcessSerialNumber psn) {
     table_delete_item(proc_table, psn.lowLongOfPSN);
 }
 
-void getProcessList() {
+void get_process_list() {
     Process *process;
     ProcessSerialNumber psn = {kNoProcess, kNoProcess};
 
     while (GetNextProcess(&psn) == noErr) {
-        process = initProcess(psn);
+        process = init_process(psn);
         if (process != NULL) {
             if (!process->xpc && strcmp(process->name, "Finder") != 0 && strcmp(process->name, "Dock") != 0) {
                 table_insert(proc_table, process->psn.lowLongOfPSN, (void *)process);

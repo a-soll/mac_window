@@ -7,7 +7,7 @@ extern Table *app_table;
 extern Table *space_table;
 
 // returns index of displayList that has current display for given window
-// void windowGetDisplay(Window *w) {
+// void window_get_display(Window *w) {
 //     uint32_t wid = w->wid;
 //     CFStringRef displayString = SLSCopyManagedDisplayForWindow(g_connection, wid);
 //     for (int i = 0; i < displayCount; i++) {
@@ -18,13 +18,13 @@ extern Table *space_table;
 //     CFRelease(displayString);
 // }
 
-void moveWindowToSpace(uint32_t wid, uint64_t sid) {
-    CFArrayRef wids = CFArrayFromNumbers(&wid, sizeof(int), 1, kCFNumberSInt32Type);
+void move_window_to_space(uint32_t wid, uint64_t sid) {
+    CFArrayRef wids = cf_array_from_numbers(&wid, sizeof(int), 1, kCFNumberSInt32Type);
     SLSMoveWindowsToManagedSpace(g_connection, wids, sid);
     CFRelease(wids);
 }
 
-CGSize windowResize(Window *w, double width, double height) {
+CGSize window_resize(Window *w, double width, double height) {
     CGSize newSize = {width, height};
     AXError err;
     CFTypeRef size = (CFTypeRef)(AXValueCreate(kAXValueCGSizeType, (const void *)&newSize));
@@ -34,7 +34,7 @@ CGSize windowResize(Window *w, double width, double height) {
     return newSize;
 }
 
-void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
+void window_move_by_corner(Window *w, corner_t corner, double x, double y) {
     CGPoint newPos;
     double x_diff;
     double y_diff;
@@ -64,16 +64,16 @@ void windowMoveByCorner(Window *w, corner_t corner, double x, double y) {
         newPos.y = y;
         break;
     }
-    windowMove(w, newPos.x, newPos.y);
+    window_move(w, newPos.x, newPos.y);
 }
 
-Window *getWindow(uint32_t wid) {
+Window *get_window(uint32_t wid) {
     Window *window;
     window = table_search(window_table, wid);
     return window;
 }
 
-CGPoint windowMove(Window *w, double x, double y) {
+CGPoint window_move(Window *w, double x, double y) {
     CGPoint newPos = {x, y};
     AXError err;
     CFTypeRef pos = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&newPos));
@@ -83,14 +83,14 @@ CGPoint windowMove(Window *w, double x, double y) {
     return newPos;
 }
 
-void windowGetSize(Window *window) {
+void window_get_size(Window *window) {
     CFTypeRef size;
     AXUIElementCopyAttributeValue(window->uiElem, kAXSizeAttribute, &size);
     AXValueGetValue(size, kAXValueCGSizeType, &window->size);
     CFRelease(size);
 }
 
-void windowGetPosition(Window *window) {
+void window_get_position(Window *window) {
     CFTypeRef pos;
     AXUIElementCopyAttributeValue(window->uiElem, kAXPositionAttribute, &pos);
     AXValueGetValue(pos, kAXValueCGPointType, &window->position);
@@ -120,7 +120,7 @@ void windowGetDimensions(Window *w) {
 
 // get pid of owner for wid in array
 pid_t getWindowOwner(CFArrayRef window_ref, int ind) {
-    int wid = getNumberFromArray(window_ref, ind);
+    int wid = get_number_from_array(window_ref, ind);
     int wcid; // window connection id
     pid_t pid;
     SLSGetWindowOwner(g_connection, wid, &wcid);
@@ -128,45 +128,45 @@ pid_t getWindowOwner(CFArrayRef window_ref, int ind) {
     return pid;
 }
 
-uint64_t currentSpaceForWindow(Window *window) {
+uint64_t current_space_for_window(Window *window) {
     int sid = 0;
-    CFArrayRef window_list_ref = CFArrayFromNumbers(&window->wid, sizeof(uint32_t), 1, kCFNumberSInt32Type);
+    CFArrayRef window_list_ref = cf_array_from_numbers(&window->wid, sizeof(uint32_t), 1, kCFNumberSInt32Type);
     CFArrayRef space_list_ref = SLSCopySpacesForWindows(g_connection, 0x7, window_list_ref);
     int count = CFArrayGetCount(space_list_ref);
     if (count) {
-        sid = getNumberFromArray(space_list_ref, 0);
+        sid = get_number_from_array(space_list_ref, 0);
     }
     CFRelease(window_list_ref);
     CFRelease(space_list_ref);
     return (uint64_t)sid;
 }
 
-AXError setFocusedWindow(Application *application, uint32_t wid) {
+AXError set_focused_window(Application *application, uint32_t wid) {
     Window *window = table_search(window_table, wid);
     return AXUIElementSetAttributeValue(application->uiElem, kAXFocusedWindowAttribute, window->uiElem);
 }
 
-void getWindowList() {
-    window_table->release = &releaseWindow;
-    uint64_t cur_space = getActiveSpace();
+void get_window_list() {
+    window_table->release = &release_window;
+    uint64_t cur_space = get_active_space();
     ProcessSerialNumber front_psn;
     _SLPSGetFrontProcess(&front_psn);
     Process *front_proc = table_search(proc_table, front_psn.lowLongOfPSN);
     Application *front_app = table_search(app_table, front_proc->pid);
-    uint32_t front_wid = getApplicationFocusedWindow(front_app);
+    uint32_t front_wid = get_application_focused_window(front_app);
 
     // get list of windows for each space
     for (int j = 0; j < space_table->size; j++) {
         if (valid_bucket(space_table, j)) {
             Space *space = (Space *)space_table->buckets[j]->data;
             CFArrayRef window_ref;
-            window_ref = spaceWindows(space->sid);
+            window_ref = space_windows(space->sid);
             int count = CFArrayGetCount(window_ref);
 
             // get owner pid for each window
             for (int i = 0; i < count; i++) {
                 pid_t pid = getWindowOwner(window_ref, i);
-                int wid = getNumberFromArray(window_ref, i);
+                int wid = get_number_from_array(window_ref, i);
                 Application *application = (Application *)table_search(app_table, pid);
                 if (!application) {
                     break;
@@ -180,23 +180,23 @@ void getWindowList() {
                 if (space->sid != cur_space) {
                     bool cur_app = false;
                     if (application->pid == front_app->pid) {
-                        moveWindowToSpace(wid, cur_space);
+                        move_window_to_space(wid, cur_space);
                         cur_app = true;
                     } else {
-                        applicationHide(application);
+                        application_hide(application);
                     }
-                    app_windows = getApplicationWindows(application);
+                    app_windows = get_application_windows(application);
                     if (!table_search(window_table, wid)) {
-                        initWindow(app_windows, application);
+                        init_window(app_windows, application);
                     }
-                    applicationUnHide(application);
+                    application_unhide(application);
                     if (cur_app) {
-                        moveWindowToSpace(wid, space->sid);
+                        move_window_to_space(wid, space->sid);
                     }
                 } else {
-                    app_windows = getApplicationWindows(application);
+                    app_windows = get_application_windows(application);
                     if (app_windows != NULL && !table_search(window_table, wid)) {
-                        initWindow(app_windows, application);
+                        init_window(app_windows, application);
                     }
                 }
                 CFRelease(app_windows);
@@ -219,7 +219,7 @@ void windowCallback(AXObserverRef observer, AXUIElementRef element, CFStringRef 
         // placeholder
     }
     if (CFEqual(kAXWindowResizedNotification, notifName)) {
-        windowGetSize(window);
+        window_get_size(window);
     }
 }
 
@@ -229,14 +229,14 @@ void windowAddObservers(Window *window) {
     AXError err = AXObserverCreate(application->pid, windowCallback, &application->observer);
 
     for (int i = 0; i < count; i++) {
-        CFStringRef notif = CCFSTRING(notifs[i]);
+        CFStringRef notif = c_cfstring(notifs[i]);
         AXError obser = AXObserverAddNotification(application->observer, application->uiElem, notif, window);
         CFRelease(notif);
     }
 }
 
 // window_list is axuielements of windows for the app
-void initWindow(CFArrayRef window_list, Application *application) {
+void init_window(CFArrayRef window_list, Application *application) {
     CFIndex c = CFArrayGetCount(window_list);
 
     for (int i = 0; i < c; i++) {
@@ -248,13 +248,13 @@ void initWindow(CFArrayRef window_list, Application *application) {
         window->application = application;
         windowAddObservers(window);
         CFRunLoopAddSource(CFRunLoopGetCurrent(), AXObserverGetRunLoopSource(application->observer), kCFRunLoopDefaultMode);
-        windowGetSize(window);
-        windowGetPosition(window);
+        window_get_size(window);
+        window_get_position(window);
         windowIsMinimized(window);
         // windowGetDimensions(window);
 
         /**have to double check window table here because multiple windows for apps
-         * will pass the fist check in getWindowList()
+         * will pass the fist check in get_window_list()
          */
         if (!table_search(window_table, window->wid)) {
             table_insert(window_table, window->wid, window);
@@ -266,7 +266,7 @@ void initWindow(CFArrayRef window_list, Application *application) {
     }
 }
 
-void releaseWindow(void *window) {
+void release_window(void *window) {
     Window *win = (Window *)window;
     CFRelease(win->uiElem);
 }

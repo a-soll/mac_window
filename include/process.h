@@ -11,9 +11,9 @@ typedef struct Proccess {
     bool xpc;
 } Process;
 
-void getProcessList();
-Process *getProcess(ProcessSerialNumber psn);
-void removeProcess(ProcessSerialNumber psn);
-Process *initProcess(ProcessSerialNumber psn);
+void get_process_list();
+Process *get_process(ProcessSerialNumber psn);
+void remove_process(ProcessSerialNumber psn);
+Process *init_process(ProcessSerialNumber psn);
 
 #endif /* PROCESS_H */

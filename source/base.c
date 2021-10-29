@@ -1,12 +1,20 @@
 #include "include/base.h"
 
-CFStringRef CCFSTRING(const char *cstring) {
+// CFStringRef from const char
+CFStringRef c_cfstring(const char *cstring) {
     CFStringRef ref;
     ref = CFStringCreateWithCString(kCFAllocatorDefault, cstring, kCFStringEncodingUTF8);
     return ref;
 }
 
-CFArrayRef CFArrayFromNumbers(void *values, size_t size, int count, CFNumberType type) {
+// CFStringRef from char
+CFStringRef cfstring(char *cstring) {
+    CFStringRef ref;
+    ref = CFStringCreateWithCString(kCFAllocatorDefault, cstring, kCFStringEncodingUTF8);
+    return ref;
+}
+
+CFArrayRef cfarray_from_numbers(void *values, size_t size, int count, CFNumberType type) {
     CFNumberRef tmp[count];
 
     for (int i = 0; i < count; i++) {
@@ -16,7 +24,7 @@ CFArrayRef CFArrayFromNumbers(void *values, size_t size, int count, CFNumberType
     return result;
 }
 
-int getNumberFromArray(CFArrayRef arr, int ind) {
+int get_cfnumber_from_array(CFArrayRef arr, int ind) {
     int num;
     CFNumberRef tmp = CFArrayGetValueAtIndex(arr, ind);
     CFNumberGetValue(tmp, kCFNumberSInt32Type, &num);

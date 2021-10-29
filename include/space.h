@@ -11,9 +11,9 @@ typedef struct Space {
     uint64_t sid;
 } Space;
 
-void initSpaceList();
+void init_space_list();
 // return all window IDs for given space ID
-CFArrayRef spaceWindows(uint64_t sid);
-uint64_t getActiveSpace();
+CFArrayRef space_windows(uint64_t sid);
+uint64_t get_active_space();
 
 #endif /* SPACE_H */

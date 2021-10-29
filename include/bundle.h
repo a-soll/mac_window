@@ -2,7 +2,7 @@
 #define BUNDLE_H
 #include "base.h"
 
-void getAppBundle();
-CFURLRef loadBundle(char *app_path);
+void get_app_bundle();
+CFURLRef load_bundle(char *app_path);
 
 #endif /* BUNDLE_H */

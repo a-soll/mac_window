@@ -22,7 +22,7 @@ void getDisplayDimensions(Display *display, CGDirectDisplayID did) {
     display->bottomright.y = display->height + display->origin.y;
 }
 
-int spaceListForDisplay(int did, uint64_t **sid_list) {
+int space_list_for_display(int did, uint64_t **sid_list) {
     CFUUIDRef uuid_ref = CGDisplayCreateUUIDFromDisplayID(did);
     int count;
     CFStringRef uuid_str = CFUUIDCreateString(NULL, uuid_ref);
@@ -57,14 +57,14 @@ int spaceListForDisplay(int did, uint64_t **sid_list) {
     return count;
 }
 
-CFStringRef getDisplayForWindowId(uint64_t wid) {
+CFStringRef get_display_for_window_id(uint64_t wid) {
     CFStringRef duuid;
     duuid = SLSCopyManagedDisplayForWindow(g_connection, wid);
     return duuid;
 }
 
-void getDisplayList() {
-    display_table->release = &releaseDisplay;
+void get_display_list() {
+    display_table->release = &release_display;
     CFArrayRef display_list = SLSCopyManagedDisplays(g_connection);
     uint32_t count = CFArrayGetCount(display_list);
     CGDirectDisplayID ids[count];
@@ -89,7 +89,7 @@ void getDisplayList() {
     CFRelease(display_list);
 }
 
-void releaseDisplay(void *display) {
+void release_display(void *display) {
     Display *dis = (Display *)display;
     CFRelease(dis->uuid);
 }

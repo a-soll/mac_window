@@ -14,7 +14,7 @@ Table *space_table;
 int main() {
     g_connection = SLSMainConnectionID();
 
-    // displayCount = getDisplayList(&displayList);
+    // displayCount = get_display_list(&displayList);
     void *g_workspace_context;
 
     workspace_event_handler_init(&g_workspace_context);
@@ -26,16 +26,16 @@ int main() {
     app_table = table_init(125);
     window_table = table_init(20);
 
-    getDisplayList();
-    initSpaceList();
-    getProcessList();
-    initApplicationList();
-    getWindowList();
+    get_display_list();
+    init_space_list();
+    get_process_list();
+    init_application_list();
+    get_window_list();
 
     for (int i = 0; i < window_table->size; i++) {
         if (valid_bucket(window_table, i)) {
             Window *window = window_table->buckets[i]->data;
-            uint64_t sid = currentSpaceForWindow(window);
+            uint64_t sid = current_space_for_window(window);
             printf("WID: %d\n", window->wid);
             printf("Name: %s\n", window->application->name);
             CFShow(window->uiElem);

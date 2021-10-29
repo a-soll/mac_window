@@ -1,7 +1,7 @@
 #include "include/bundle.h"
 
 // get app CFURL up to .app for launching
-void getAppPath(char path[MAXPATHLEN]) {
+void get_app_path(char path[MAXPATHLEN]) {
     char to[MAXPATHLEN];
     char *tmp;
 
@@ -15,8 +15,8 @@ void getAppPath(char path[MAXPATHLEN]) {
     }
 }
 
-CFURLRef loadBundle(char *app_path) {
-    getAppPath(app_path);
+CFURLRef load_bundle(char *app_path) {
+    get_app_path(app_path);
     CFURLRef url;
     CFStringRef path = CFStringCreateWithCString(kCFAllocatorDefault, (const char *)app_path, kCFStringEncodingUTF8);
     url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, path, kCFURLPOSIXPathStyle, true);

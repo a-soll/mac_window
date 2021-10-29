@@ -18,10 +18,10 @@ typedef struct Display {
     CGPoint bottomright;
 } Display;
 
-void getDisplayList();
-void currentDisplay(Display **d);
-void releaseDisplay(void *display);
-int spaceListForDisplay(int did, uint64_t **sid_list);
-CFStringRef getDisplayForWindowId(uint64_t wid);
+void get_display_list();
+void current_display(Display **d);
+void release_display(void *display);
+int space_list_for_display(int did, uint64_t **sid_list);
+CFStringRef get_display_for_window_id(uint64_t wid);
 
 #endif /* DISPLAY_H */

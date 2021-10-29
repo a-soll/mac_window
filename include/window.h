@@ -31,21 +31,21 @@ static const char* const notifs[] = {
     "AXWindowResized"
 };
 
-void getWindowList();
-Window *getWindow(uint32_t wid);
+void get_window_list();
+Window *get_window(uint32_t wid);
 // move the given app window
-CGPoint windowMove(Window *w, double x, double y);
+CGPoint window_move(Window *w, double x, double y);
 // resize given app window
-CGSize windowResize(Window *w, double width, double height);
-void windowMoveByCorner(Window *w, corner_t corner, double x, double y);
-void releaseWindow(void *window);
-void initWindow(CFArrayRef window_list, Application *application);
-void windowGetDisplay(Window *w);
-double windowMoveLeftEdgeFlush(Window *w);
-void windowGetSize(Window *window);
-void windowGetPosition(Window *window);
-uint64_t currentSpaceForWindow(Window *window);
-void moveWindowToSpace(uint32_t wid, uint64_t sid);
-AXError setFocusedWindow(Application *application, uint32_t wid);
+CGSize window_resize(Window *w, double width, double height);
+void window_move_by_corner(Window *w, corner_t corner, double x, double y);
+void release_window(void *window);
+void init_window(CFArrayRef window_list, Application *application);
+void window_get_display(Window *w);
+double window_move_left_edge_flush(Window *w);
+void window_get_size(Window *window);
+void window_get_position(Window *window);
+uint64_t current_space_for_window(Window *window);
+void move_window_to_space(uint32_t wid, uint64_t sid);
+AXError set_focused_window(Application *application, uint32_t wid);
 
 #endif /* WINDOWS_H */
