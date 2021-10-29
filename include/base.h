@@ -26,7 +26,7 @@ typedef enum {
 
 CFStringRef cfstring(char *cstring);
 CFStringRef c_cfstring(const char *cstring);
-CFArrayRef cf_array_from_numbers(void *values, size_t size, int count, CFNumberType type);
-int get_number_from_array(CFArrayRef arr, int ind);
+CFArrayRef cfarray_from_numbers(void *values, size_t size, int count, CFNumberType type);
+int get_cfnumber_from_array(CFArrayRef arr, int ind);
 
 #endif /* BASE_H */

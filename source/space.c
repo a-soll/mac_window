@@ -22,7 +22,7 @@ uint64_t get_active_space() {
 CFArrayRef space_windows(uint64_t sid) {
     uint64_t set_tags = 0;
     uint64_t clear_tags = 0;
-    CFArrayRef space_list_ref = cf_array_from_numbers(&sid, sizeof(uint64_t), 1, kCFNumberSInt32Type);
+    CFArrayRef space_list_ref = cfarray_from_numbers(&sid, sizeof(uint64_t), 1, kCFNumberSInt32Type);
     CFArrayRef window_list_ref = SLSCopyWindowsWithOptionsAndTags(g_connection, 0, space_list_ref, 0x2, &set_tags, &clear_tags);
     CFRelease(space_list_ref);
     return window_list_ref;

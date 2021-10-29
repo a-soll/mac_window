@@ -22,7 +22,7 @@
 
 - (void) activeSpaceDidChange:(NSNotification *)notification
 {
-    spaceDidChange([notification.name UTF8String]);
+    space_did_change([notification.name UTF8String]);
 }
 
 @end

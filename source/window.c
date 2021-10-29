@@ -19,7 +19,7 @@ extern Table *space_table;
 // }
 
 void move_window_to_space(uint32_t wid, uint64_t sid) {
-    CFArrayRef wids = cf_array_from_numbers(&wid, sizeof(int), 1, kCFNumberSInt32Type);
+    CFArrayRef wids = cfarray_from_numbers(&wid, sizeof(int), 1, kCFNumberSInt32Type);
     SLSMoveWindowsToManagedSpace(g_connection, wids, sid);
     CFRelease(wids);
 }
@@ -97,14 +97,14 @@ void window_get_position(Window *window) {
     CFRelease(pos);
 }
 
-void windowIsMinimized(Window *window) {
+void window_is_minimized(Window *window) {
     CFTypeRef mini;
     AXUIElementCopyAttributeValue(window->uiElem, kAXMinimizedAttribute, &mini);
     window->isMinimized = CFBooleanGetValue(mini);
     CFRelease(mini);
 }
 
-void windowGetDimensions(Window *w) {
+void window_get_dimensions(Window *w) {
     w->topleft.x = w->position.x;
     w->topleft.y = w->position.y;
 
@@ -119,8 +119,8 @@ void windowGetDimensions(Window *w) {
 }
 
 // get pid of owner for wid in array
-pid_t getWindowOwner(CFArrayRef window_ref, int ind) {
-    int wid = get_number_from_array(window_ref, ind);
+pid_t get_window_owner(CFArrayRef window_ref, int ind) {
+    int wid = get_cfnumber_from_array(window_ref, ind);
     int wcid; // window connection id
     pid_t pid;
     SLSGetWindowOwner(g_connection, wid, &wcid);
@@ -130,11 +130,11 @@ pid_t getWindowOwner(CFArrayRef window_ref, int ind) {
 
 uint64_t current_space_for_window(Window *window) {
     int sid = 0;
-    CFArrayRef window_list_ref = cf_array_from_numbers(&window->wid, sizeof(uint32_t), 1, kCFNumberSInt32Type);
+    CFArrayRef window_list_ref = cfarray_from_numbers(&window->wid, sizeof(uint32_t), 1, kCFNumberSInt32Type);
     CFArrayRef space_list_ref = SLSCopySpacesForWindows(g_connection, 0x7, window_list_ref);
     int count = CFArrayGetCount(space_list_ref);
     if (count) {
-        sid = get_number_from_array(space_list_ref, 0);
+        sid = get_cfnumber_from_array(space_list_ref, 0);
     }
     CFRelease(window_list_ref);
     CFRelease(space_list_ref);
@@ -165,8 +165,8 @@ void get_window_list() {
 
             // get owner pid for each window
             for (int i = 0; i < count; i++) {
-                pid_t pid = getWindowOwner(window_ref, i);
-                int wid = get_number_from_array(window_ref, i);
+                pid_t pid = get_window_owner(window_ref, i);
+                int wid = get_cfnumber_from_array(window_ref, i);
                 Application *application = (Application *)table_search(app_table, pid);
                 if (!application) {
                     break;
@@ -206,7 +206,7 @@ void get_window_list() {
     }
 }
 
-void windowCallback(AXObserverRef observer, AXUIElementRef element, CFStringRef notifName, void *data) {
+void window_callback(AXObserverRef observer, AXUIElementRef element, CFStringRef notifName, void *data) {
     Window *window = data;
 
     if (CFEqual(kAXWindowMiniaturizedNotification, notifName)) {
@@ -223,10 +223,10 @@ void windowCallback(AXObserverRef observer, AXUIElementRef element, CFStringRef 
     }
 }
 
-void windowAddObservers(Window *window) {
+void window_add_observers(Window *window) {
     Application *application = window->application;
+    application_observe(application, window_callback);
     int count = arrayCount(notifs);
-    AXError err = AXObserverCreate(application->pid, windowCallback, &application->observer);
 
     for (int i = 0; i < count; i++) {
         CFStringRef notif = c_cfstring(notifs[i]);
@@ -246,20 +246,19 @@ void init_window(CFArrayRef window_list, Application *application) {
         _AXUIElementGetWindow(window->uiElem, &window->wid);
         CFRetain(window->uiElem);
         window->application = application;
-        windowAddObservers(window);
+        window_add_observers(window);
         CFRunLoopAddSource(CFRunLoopGetCurrent(), AXObserverGetRunLoopSource(application->observer), kCFRunLoopDefaultMode);
         window_get_size(window);
         window_get_position(window);
-        windowIsMinimized(window);
-        // windowGetDimensions(window);
+        window_is_minimized(window);
+        // window_get_dimensions(window);
 
         /**have to double check window table here because multiple windows for apps
          * will pass the fist check in get_window_list()
          */
         if (!table_search(window_table, window->wid)) {
             table_insert(window_table, window->wid, window);
-        }
-        else {
+        } else {
             CFRelease(window->uiElem);
             free(window);
         }

@@ -32,5 +32,6 @@ uint32_t get_application_focused_window(Application *application);
 bool app_is_hidden(Application *application);
 AXError application_hide(Application *application);
 AXError application_unhide(Application *application);
+AXError application_observe(Application *application, AXObserverCallback callback);
 
 #endif /* APPLICATIONS_H */

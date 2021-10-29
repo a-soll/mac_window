@@ -72,6 +72,11 @@ CFArrayRef get_application_windows(Application *application) {
     return window_list;
 }
 
+AXError application_observe(Application *application, AXObserverCallback callback) {
+    AXError err = AXObserverCreate(application->pid, callback, &application->observer);
+    return err;
+}
+
 void init_application_list() {
     for (int i = 0; i < proc_table->size; i++) {
         if (valid_bucket(proc_table, i)) {
