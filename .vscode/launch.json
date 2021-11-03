@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "mac_window",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/mac_window",
             "args": [],
@@ -15,7 +15,9 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "make debug"
+            "preLaunchTask": "make debug",
+            "targetArchitecture": "arm64",
+            "console": "internalConsole"
         }
     ]
 }

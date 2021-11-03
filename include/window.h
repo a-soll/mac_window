@@ -6,7 +6,6 @@
 #include "display.h"
 #include "bucket.h"
 #include "process.h"
-#include "c_callback.h"
 
 typedef struct Window {
     Application *application;
