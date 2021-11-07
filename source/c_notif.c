@@ -1,6 +1,6 @@
 #include "include/base.h"
-#include "include/notif.h"
 #include "include/includes.h"
+#include "include/notif.h"
 #include <time.h>
 
 void space_did_change(const char *notif) {

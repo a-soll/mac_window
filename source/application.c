@@ -32,7 +32,13 @@ Application *get_active_application() {
 
     _SLPSGetFrontProcess(&psn);
     GetProcessPID(&psn, &pid);
-    application = table_search(app_table, pid);
+    application = get_application(pid);
+    return application;
+}
+
+Application *get_application(pid_t pid) {
+    Application *application;
+    application = (Application *)table_search(app_table, pid);
     return application;
 }
 
@@ -78,19 +84,17 @@ AXError application_observe(Application *application, AXObserverCallback callbac
 }
 
 void init_application_list() {
-    for (int i = 0; i < proc_table->size; i++) {
-        if (valid_bucket(proc_table, i)) {
-            Process *process = (Process *)proc_table->buckets[i]->data;
-            Application *application = malloc(sizeof(Application));
-            strcpy(application->name, process->name);
-            application->pid = process->pid;
-            application->psn = process->psn;
-            application->uiElem = AXUIElementCreateApplication(application->pid);
-            getApplicationPath(application);
-            table_insert(app_table, application->pid, application);
-            app_table->release = &release_application;
-        }
-    }
+    Process *process = (Process *)table_iterate(proc_table, true);
+    do {
+        Application *application = malloc(sizeof(Application));
+        strcpy(application->name, process->name);
+        application->pid = process->pid;
+        application->psn = process->psn;
+        application->uiElem = AXUIElementCreateApplication(application->pid);
+        getApplicationPath(application);
+        table_insert(app_table, application->pid, application);
+        app_table->release = &release_application;
+    } while ((process = table_iterate(proc_table, false)));
 }
 
 int get_application_by_name(Application *a, const char *name, int length) {

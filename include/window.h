@@ -1,10 +1,10 @@
 #ifndef WINDOWS_H
 #define WINDOWS_H
 
-#include "base.h"
 #include "application.h"
-#include "display.h"
+#include "base.h"
 #include "bucket.h"
+#include "display.h"
 #include "process.h"
 
 typedef struct Window {
@@ -23,12 +23,11 @@ typedef struct Window {
 } Window;
 
 // actual CSTR names of notifs
-static const char* const notifs[] = {
+static const char *const notifs[] = {
     "AXResized",
     "AXWindowDeminiaturized",
     "AXWindowMiniaturized",
-    "AXWindowResized"
-};
+    "AXWindowResized"};
 
 void get_window_list();
 Window *get_window(uint32_t wid);
@@ -46,5 +45,6 @@ void window_get_position(Window *window);
 uint64_t current_space_for_window(Window *window);
 void move_window_to_space(uint32_t wid, uint64_t sid);
 AXError set_focused_window(Application *application, uint32_t wid);
+Window *get_window(uint32_t wid);
 
 #endif /* WINDOWS_H */

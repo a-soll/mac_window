@@ -22,6 +22,13 @@ void getDisplayDimensions(Display *display, CGDirectDisplayID did) {
     display->bottomright.y = display->height + display->origin.y;
 }
 
+Display *get_main_display() {
+    Display *d;
+    int did = CGMainDisplayID();
+    d = get_display(did);
+    return d;
+}
+
 int space_list_for_display(int did, uint64_t **sid_list) {
     CFUUIDRef uuid_ref = CGDisplayCreateUUIDFromDisplayID(did);
     int count;
@@ -87,6 +94,12 @@ void get_display_list() {
         table_insert(display_table, display->did, (void *)display);
     }
     CFRelease(display_list);
+}
+
+Display *get_display(int did) {
+    Display *display;
+    display = (Display *)table_search(display_table, did);
+    return display;
 }
 
 void release_display(void *display) {

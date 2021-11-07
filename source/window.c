@@ -69,7 +69,7 @@ void window_move_by_corner(Window *w, corner_t corner, double x, double y) {
 
 Window *get_window(uint32_t wid) {
     Window *window;
-    window = table_search(window_table, wid);
+    window = (Window *)table_search(window_table, wid);
     return window;
 }
 
@@ -142,7 +142,7 @@ uint64_t current_space_for_window(Window *window) {
 }
 
 AXError set_focused_window(Application *application, uint32_t wid) {
-    Window *window = table_search(window_table, wid);
+    Window *window = get_window(wid);
     return AXUIElementSetAttributeValue(application->uiElem, kAXFocusedWindowAttribute, window->uiElem);
 }
 
@@ -151,59 +151,57 @@ void get_window_list() {
     uint64_t cur_space = get_active_space();
     ProcessSerialNumber front_psn;
     _SLPSGetFrontProcess(&front_psn);
-    Process *front_proc = table_search(proc_table, front_psn.lowLongOfPSN);
-    Application *front_app = table_search(app_table, front_proc->pid);
+    Process *front_proc = get_process(front_psn);
+    Application *front_app = get_application(front_proc->pid);
     uint32_t front_wid = get_application_focused_window(front_app);
 
     // get list of windows for each space
-    for (int j = 0; j < space_table->size; j++) {
-        if (valid_bucket(space_table, j)) {
-            Space *space = (Space *)space_table->buckets[j]->data;
-            CFArrayRef window_ref;
-            window_ref = space_windows(space->sid);
-            int count = CFArrayGetCount(window_ref);
+    Space *space = (Space *)table_iterate(space_table, true);
+    do {
+        CFArrayRef window_ref;
+        window_ref = space_windows(space->sid);
+        int count = CFArrayGetCount(window_ref);
 
-            // get owner pid for each window
-            for (int i = 0; i < count; i++) {
-                pid_t pid = get_window_owner(window_ref, i);
-                int wid = get_cfnumber_from_array(window_ref, i);
-                Application *application = (Application *)table_search(app_table, pid);
-                if (!application) {
-                    break;
-                }
-                CFArrayRef app_windows;
-                /**In order to create AXUIElement for windows from other spaces,
+        // get owner pid for each window
+        for (int i = 0; i < count; i++) {
+            pid_t pid = get_window_owner(window_ref, i);
+            int wid = get_cfnumber_from_array(window_ref, i);
+            Application *application = get_application(pid);
+            if (!application) {
+                break;
+            }
+            CFArrayRef app_windows;
+            /**In order to create AXUIElement for windows from other spaces,
                  * we need to interact with the process by invoking hide. we then unhide it.
                  * To avoid flashing the currently focused app, we simply move the windows from other
                  * spaces to the current one.
                  */
-                if (space->sid != cur_space) {
-                    bool cur_app = false;
-                    if (application->pid == front_app->pid) {
-                        move_window_to_space(wid, cur_space);
-                        cur_app = true;
-                    } else {
-                        application_hide(application);
-                    }
-                    app_windows = get_application_windows(application);
-                    if (!table_search(window_table, wid)) {
-                        init_window(app_windows, application);
-                    }
-                    application_unhide(application);
-                    if (cur_app) {
-                        move_window_to_space(wid, space->sid);
-                    }
+            if (space->sid != cur_space) {
+                bool cur_app = false;
+                if (application->pid == front_app->pid) {
+                    move_window_to_space(wid, cur_space);
+                    cur_app = true;
                 } else {
-                    app_windows = get_application_windows(application);
-                    if (app_windows != NULL && !table_search(window_table, wid)) {
-                        init_window(app_windows, application);
-                    }
+                    application_hide(application);
                 }
-                CFRelease(app_windows);
+                app_windows = get_application_windows(application);
+                if (!get_window(wid)) {
+                    init_window(app_windows, application);
+                }
+                application_unhide(application);
+                if (cur_app) {
+                    move_window_to_space(wid, space->sid);
+                }
+            } else {
+                app_windows = get_application_windows(application);
+                if (app_windows != NULL && !get_window(wid)) {
+                    init_window(app_windows, application);
+                }
             }
-            CFRelease(window_ref);
+            CFRelease(app_windows);
         }
-    }
+        CFRelease(window_ref);
+    } while ((space = (Space *)table_iterate(space_table, false)));
 }
 
 void window_callback(AXObserverRef observer, AXUIElementRef element, CFStringRef notifName, void *data) {
@@ -256,7 +254,7 @@ void init_window(CFArrayRef window_list, Application *application) {
         /**have to double check window table here because multiple windows for apps
          * will pass the fist check in get_window_list()
          */
-        if (!table_search(window_table, window->wid)) {
+        if (!get_window(window->wid)) {
             table_insert(window_table, window->wid, window);
         } else {
             CFRelease(window->uiElem);

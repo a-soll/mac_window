@@ -32,19 +32,17 @@ int main() {
     init_application_list();
     get_window_list();
 
-    for (int i = 0; i < window_table->size; i++) {
-        if (valid_bucket(window_table, i)) {
-            Window *window = window_table->buckets[i]->data;
-            uint64_t sid = current_space_for_window(window);
-            printf("WID: %d\n", window->wid);
-            printf("Name: %s\n", window->application->name);
-            CFShow(window->uiElem);
-            printf("Height: %f\n", window->size.height);
-            printf("SID: %llu\n", sid);
-            printf("Mini? %d\n", window->isMinimized);
-            printf("\n");
-        }
-    }
+    Window *w = (Window *)table_iterate(window_table, true);
+    do {
+        uint64_t sid = current_space_for_window(w);
+        printf("WID: %d\n", w->wid);
+        printf("Name: %s\n", w->application->name);
+        CFShow(w->uiElem);
+        printf("Height: %f\n", w->size.height);
+        printf("SID: %llu\n", sid);
+        printf("Mini? %d\n", w->isMinimized);
+        printf("\n");
+    } while ((w = (Window *)table_iterate(window_table, false)));
 
     bridgeNSAppLoad();
     // CFRunLoopRun();

@@ -1,17 +1,17 @@
 #ifndef CGSSPACES_H
 #define CGSSPACES_H
 
-#include <CoreGraphics/CoreGraphics.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreGraphics/CoreGraphics.h>
 
 #define kCGSIgnoreForExposeTagBit (1 << 7)
 #define kCGSIgnoreForEventsTagBit (1 << 9)
-#define kCGSDisableShadowTagBit   (1 << 3)
+#define kCGSDisableShadowTagBit (1 << 3)
 
-CGDirectDisplayID convertUUIDtoID(char* uuid);
+CGDirectDisplayID convertUUIDtoID(char *uuid);
 void CGSConfigureDisplayMode(CGDisplayConfigRef config, CGDirectDisplayID display, int modeNum);
-void CGSGetCurrentDisplayMode(CGDirectDisplayID display, int* modeNum);
+void CGSGetCurrentDisplayMode(CGDirectDisplayID display, int *modeNum);
 extern uint64_t SLSGetActiveSpace(int cid);
 extern AXError _AXUIElementGetWindow(AXUIElementRef ref, uint32_t *wid);
 extern int SLSMainConnectionID(void);
@@ -75,6 +75,8 @@ extern CGError SLSGetCurrentCursorLocation(int cid, CGPoint *point);
 /// Gets a list of windows owned by `targetCID`.
 CG_EXTERN CGError CGSGetWindowList(int cid, int targetCID, int count, uint32_t *list, int *outCount);
 CG_EXTERN CFArrayRef CGSSpaceCopyOwners(int cid, uint64_t sid);
+CG_EXTERN uint64_t CGSSpaceCreate(int cid, void *null, CFDictionaryRef options);
+// extern void CGSManagedDisplaySetCurrentSpace(const int cid, uint64_t display, uint64_t space);
 #if 0
 extern CFArrayRef _LSCopyApplicationArrayInFrontToBackOrder(int negative_one, int one);
 extern void _LSASNExtractHighAndLowParts(const void *asn, uint32_t *high, uint32_t *low);

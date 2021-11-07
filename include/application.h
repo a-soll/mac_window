@@ -2,8 +2,8 @@
 #define APPLICATIONS_H
 
 #include "base.h"
-#include "process.h"
 #include "bundle.h"
+#include "process.h"
 
 typedef struct Application {
     AXUIElementRef uiElem;
@@ -33,5 +33,6 @@ bool app_is_hidden(Application *application);
 AXError application_hide(Application *application);
 AXError application_unhide(Application *application);
 AXError application_observe(Application *application, AXObserverCallback callback);
+Application *get_application(pid_t pid);
 
 #endif /* APPLICATIONS_H */

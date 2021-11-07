@@ -14,6 +14,18 @@ CFStringRef cfstring(char *cstring) {
     return ref;
 }
 
+char *get_cstring(CFStringRef from) {
+    CFIndex length = CFStringGetLength(from);
+    CFIndex max_size = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
+    char *buffer = malloc(max_size);
+
+    if (CFStringGetCString(from, buffer, max_size, kCFStringEncodingUTF8)) {
+        return buffer;
+    }
+    free(buffer);
+    return NULL;
+}
+
 CFArrayRef cfarray_from_numbers(void *values, size_t size, int count, CFNumberType type) {
     CFNumberRef tmp[count];
 

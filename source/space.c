@@ -4,9 +4,33 @@ extern int g_connection;
 extern Table *space_table;
 extern Table *display_table;
 
-Space *getSpace(uint64_t sid) {
+Space *get_space(uint64_t sid) {
     Space *space;
-    space = table_search(space_table, sid);
+    space = (Space *)table_search(space_table, sid);
+    return space;
+}
+
+/* pass display uuid. `killall Dock` needs to be called for
+ * space to become visible.
+ */
+Space *create_space(CFStringRef uuid) {
+    Space *space = malloc(sizeof(Space));
+
+    CFTypeRef keys[2];
+    keys[0] = CFSTR("type");
+    keys[1] = CFSTR("uuid");
+
+    CFTypeRef values[2];
+    int type_int = CGSSpaceTypeUser;
+    CFNumberRef type = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &type_int);
+    values[0] = type;
+    values[1] = uuid;
+
+    CFDictionaryRef options = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&keys, (const void **)&values, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    space->sid = CGSSpaceCreate(g_connection, (void *)uuid, options);
+    table_insert(space_table, space->sid, space);
+
+    CFRelease(options);
     return space;
 }
 
@@ -33,18 +57,16 @@ void init_space_list() {
     int ret;
     int space_count;
     uint64_t *sid_list;
-    for (int i = 0; i < display_table->size; i++) {
-        if (valid_bucket(display_table, i)) {
-            Display *display = display_table->buckets[i]->data;
-            space_count = space_list_for_display(display->did, &sid_list);
-        }
-    }
+    Display *display = (Display *)table_iterate(display_table, true);
+    do {
+        space_count = space_list_for_display(display->did, &sid_list);
 
-    for (int i = 0; i < space_count; i++) {
-        Space *space;
-        space = malloc(sizeof(Space));
-        space->sid = sid_list[i];
-        table_insert(space_table, space->sid, space);
-    }
+        for (int i = 0; i < space_count; i++) {
+            Space *space;
+            space = malloc(sizeof(Space));
+            space->sid = sid_list[i];
+            table_insert(space_table, space->sid, space);
+        }
+    } while ((display = (Display *)table_iterate(display_table, false)));
     free(sid_list);
 }

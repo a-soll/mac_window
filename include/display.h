@@ -19,9 +19,10 @@ typedef struct Display {
 } Display;
 
 void get_display_list();
-void current_display(Display **d);
 void release_display(void *display);
 int space_list_for_display(int did, uint64_t **sid_list);
 CFStringRef get_display_for_window_id(uint64_t wid);
+Display *get_display(int did);
+Display *get_main_display();
 
 #endif /* DISPLAY_H */

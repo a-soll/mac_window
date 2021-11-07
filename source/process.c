@@ -40,8 +40,7 @@ void get_process_list() {
         if (process != NULL) {
             if (!process->xpc && strcmp(process->name, "Finder") != 0 && strcmp(process->name, "Dock") != 0) {
                 table_insert(proc_table, process->psn.lowLongOfPSN, (void *)process);
-            }
-            else {
+            } else {
                 free(process);
             }
         }

@@ -4,6 +4,7 @@ Bucket *init_bucket(int key, void *data) {
     Bucket *bucket = (Bucket *)malloc(sizeof(Bucket));
     bucket->key = key;
     bucket->data = data;
+    bucket->next = NULL;
     return bucket;
 }
 
@@ -36,6 +37,22 @@ void table_free(Table *table) {
     }
     free(table->buckets);
     free(table);
+}
+
+Bucket *b;
+// pass true to first_iterate for initial assignment and false to begin iteration
+void *table_iterate(Table *table, bool first_iterate) {
+    void *item = NULL;
+    if (first_iterate) {
+        b = table->first_bucket;
+        item = b->data;
+    } else {
+        if (b->next) {
+            item = b->next->data;
+            b = b->next;
+        }
+    }
+    return item;
 }
 
 void table_delete_item(Table *table, int key) {
@@ -86,12 +103,15 @@ Table *table_init(int size) {
     for (int i = 0; i < table->size; i++) {
         table->buckets[i] = NULL;
     }
+    table->first_bucket = NULL;
+    table->prev_index = -1;
     return table;
 }
 
 void table_insert(Table *table, int key, void *data) {
     int index = hashCode(key, table->size);
     Bucket *bucket = init_bucket(key, data);
+    Bucket *prev_bucket;
 
     if (table->count == table->size) {
         table_resize(table);
@@ -101,7 +121,15 @@ void table_insert(Table *table, int key, void *data) {
             ++index;
             index %= table->size;
         }
+        if (table->prev_index != -1) {
+            prev_bucket = table->buckets[table->prev_index];
+            prev_bucket->next = bucket;
+        }
+        if (!table->first_bucket) {
+            table->first_bucket = bucket;
+        }
         table->buckets[index] = bucket;
+        table->prev_index = index;
         table->count++;
     }
 }
