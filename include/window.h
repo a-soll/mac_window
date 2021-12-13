@@ -37,7 +37,7 @@ CGPoint window_move(Window *w, double x, double y);
 CGSize window_resize(Window *w, double width, double height);
 void window_move_by_corner(Window *w, corner_t corner, double x, double y);
 void release_window(void *window);
-void init_window(CFArrayRef window_list, Application *application);
+void init_window(AXUIElementRef window_uiref, Application *application, int wid_ind);
 void window_get_display(Window *w);
 double window_move_left_edge_flush(Window *w);
 void window_get_size(Window *window);
@@ -46,5 +46,6 @@ uint64_t current_space_for_window(Window *window);
 void move_window_to_space(uint32_t wid, uint64_t sid);
 AXError set_focused_window(Application *application, uint32_t wid);
 Window *get_window(uint32_t wid);
+Window *get_window_from_axui(AXUIElementRef uiref);
 
 #endif /* WINDOWS_H */

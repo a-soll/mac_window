@@ -43,3 +43,20 @@ int get_cfnumber_from_array(CFArrayRef arr, int ind) {
     CFRelease(tmp);
     return num;
 }
+
+/**
+ * call with string to store result, string to format,
+ * and variables to append to format string.
+ *
+ * ex: fmt_string(to, "hello %s", name);
+ */
+int fmt_string(char *to, const char *s, ...) {
+    va_list ap;
+    int ret;
+
+    va_start(ap, s);
+    ret = vsprintf(to, s, ap);
+    va_end(ap);
+
+    return ret;
+}

@@ -31,7 +31,7 @@ Display *get_main_display() {
 
 int space_list_for_display(int did, uint64_t **sid_list) {
     CFUUIDRef uuid_ref = CGDisplayCreateUUIDFromDisplayID(did);
-    int count;
+    int count = 0;
     CFStringRef uuid_str = CFUUIDCreateString(NULL, uuid_ref);
     // array of all displays containing an array of spaces for that display
     CFArrayRef spaces = SLSCopyManagedDisplaySpaces(g_connection);

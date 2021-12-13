@@ -10,15 +10,13 @@ Process *init_process(ProcessSerialNumber psn) {
     GetProcessInformation(&psn, &process_info);
     GetProcessPID(&psn, &pid);
     CFStringRef name_ref;
-    if (name_ref != NULL) {
-        CopyProcessName(&psn, &name_ref);
-        process = malloc(sizeof(Process));
-        process->xpc = process_info.processType == 'XPC!';
-        CFStringGetCString(name_ref, process->name, APP_NAME_MAX, kUnicodeUTF8Format);
-        process->pid = pid;
-        process->psn = psn;
-        CFRelease(name_ref);
-    }
+    CopyProcessName(&psn, &name_ref);
+    process = malloc(sizeof(Process));
+    process->xpc = process_info.processType == 'XPC!';
+    CFStringGetCString(name_ref, process->name, APP_NAME_MAX, kUnicodeUTF8Format);
+    process->pid = pid;
+    process->psn = psn;
+    CFRelease(name_ref);
     return process;
 }
 

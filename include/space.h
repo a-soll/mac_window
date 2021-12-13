@@ -22,8 +22,8 @@ typedef enum {
 
 void init_space_list();
 // return all window IDs for given space ID
-CFArrayRef space_windows(uint64_t sid);
-uint64_t get_active_space();
+CFArrayRef window_list_for_space(uint64_t sid);
+uint64_t get_current_space();
 Space *create_space(CFStringRef uuid);
 Space *get_space(uint64_t sid);
 

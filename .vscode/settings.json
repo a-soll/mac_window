@@ -6,5 +6,4 @@
         "(*.c|*.h)": "cd $workspaceRoot && make && $workspaceRoot/mac_window"
     },
     "code-runner.runInTerminal": true,
-    "discord.enabled": true
 }

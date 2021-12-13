@@ -14,18 +14,16 @@ typedef struct Application {
     int windowCount;
     AXObserverRef observer;
     ProcessSerialNumber psn;
+    uint32_t *wids;
 } Application;
 
 CFArrayRef get_application_windows(Application *application);
 void init_application_list();
-int get_open_applications(Application **app);
-void application_get_window_list(Application **app);
 void release_application(void *application);
-void release_application_list(Application *a, int count);
 bool application_is_hidden(Application *application);
 // returns index of the app
 int get_application_by_name(Application *a, const char *name, int length);
-OSStatus launch_application(Application *application);
+OSStatus launch_application(CFURLRef url);
 Application *get_active_application();
 // returns wid of focused window
 uint32_t get_application_focused_window(Application *application);
