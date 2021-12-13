@@ -72,9 +72,6 @@ CFArrayRef get_application_windows(Application *application) {
     CFTypeRef window_list;
 
     AXUIElementCopyAttributeValue(application->uiElem, kAXWindowsAttribute, &window_list);
-    // if (window_list != NULL) {
-    //     application->windowCount = CFArrayGetCount(window_list);
-    // }
     return window_list;
 }
 
