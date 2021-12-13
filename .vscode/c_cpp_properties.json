@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "mac",
-            "intelliSenseMode": "macos-clang-x64",
+            "intelliSenseMode": "${default}",
             "cStandard": "c99",
             "compilerPath": "/usr/bin/clang",
             "includePath": [

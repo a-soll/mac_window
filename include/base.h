@@ -16,6 +16,7 @@
 #include <libproc.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
 typedef enum {
     cTopLeft,
@@ -29,5 +30,6 @@ CFStringRef c_cfstring(const char *cstring);
 CFArrayRef cfarray_from_numbers(void *values, size_t size, int count, CFNumberType type);
 int get_cfnumber_from_array(CFArrayRef arr, int ind);
 char *get_cstring(CFStringRef from);
+int fmt_string(char *to, const char *s, ...);
 
 #endif /* BASE_H */

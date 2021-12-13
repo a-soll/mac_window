@@ -34,7 +34,7 @@ Space *create_space(CFStringRef uuid) {
     return space;
 }
 
-uint64_t get_active_space() {
+uint64_t get_current_space() {
     Application *application = get_active_application();
     uint64_t wid = get_application_focused_window(application);
     CFStringRef duuid = get_display_for_window_id(wid);
@@ -43,7 +43,7 @@ uint64_t get_active_space() {
     return sid;
 }
 
-CFArrayRef space_windows(uint64_t sid) {
+CFArrayRef window_list_for_space(uint64_t sid) {
     uint64_t set_tags = 0;
     uint64_t clear_tags = 0;
     CFArrayRef space_list_ref = cfarray_from_numbers(&sid, sizeof(uint64_t), 1, kCFNumberSInt32Type);
@@ -54,7 +54,6 @@ CFArrayRef space_windows(uint64_t sid) {
 
 void init_space_list() {
     space_table->release = NULL;
-    int ret;
     int space_count;
     uint64_t *sid_list;
     Display *display = (Display *)table_iterate(display_table, true);

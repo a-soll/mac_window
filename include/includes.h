@@ -7,5 +7,6 @@
 #include "display.h"
 #include "process.h"
 #include "window.h"
+#include "config.h"
 
 #endif /* INCLUDES_H */

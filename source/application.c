@@ -5,7 +5,7 @@ extern Table *proc_table;
 extern int g_connection;
 
 // get path and CFURL of app
-void getApplicationPath(Application *application) {
+void get_application_path(Application *application) {
     char path_of_app[PROC_PIDPATHINFO_MAXSIZE];
     proc_pidpath(application->pid, path_of_app, sizeof(path_of_app));
     CFURLRef path_url = load_bundle(path_of_app);
@@ -72,9 +72,6 @@ CFArrayRef get_application_windows(Application *application) {
     CFTypeRef window_list;
 
     AXUIElementCopyAttributeValue(application->uiElem, kAXWindowsAttribute, &window_list);
-    if (window_list != NULL) {
-        application->windowCount = CFArrayGetCount(window_list);
-    }
     return window_list;
 }
 
@@ -88,36 +85,27 @@ void init_application_list() {
     do {
         Application *application = malloc(sizeof(Application));
         strcpy(application->name, process->name);
+        application->windowCount = -1;
+        application->wids = NULL;
         application->pid = process->pid;
         application->psn = process->psn;
         application->uiElem = AXUIElementCreateApplication(application->pid);
-        getApplicationPath(application);
+        get_application_path(application);
         table_insert(app_table, application->pid, application);
         app_table->release = &release_application;
     } while ((process = table_iterate(proc_table, false)));
 }
 
-int get_application_by_name(Application *a, const char *name, int length) {
-    int ind = -1;
-
-    for (int i = 0; i < length; i++) {
-        if (strcmp(name, a[i].name) == 0) {
-            ind = i;
-            break;
-        }
-    }
-    return ind;
-}
-
 void release_application(void *application) {
     Application *app = (Application *)application;
+    free(app->wids);
     CFRelease(app->uiElem);
     CFRelease(app->urlRef);
 }
 
-OSStatus launch_application(Application *application) {
+OSStatus launch_application(CFURLRef url) {
     OSStatus did_launch;
-    did_launch = LSOpenCFURLRef(application->urlRef, NULL);
+    did_launch = LSOpenCFURLRef(url, NULL);
     return did_launch;
 }
 
