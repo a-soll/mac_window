@@ -103,9 +103,12 @@ void release_application(void *application) {
     CFRelease(app->urlRef);
 }
 
-OSStatus launch_application(CFURLRef url) {
+OSStatus launch_application(char *path) {
     OSStatus did_launch;
+    CFURLRef url = load_bundle(path);
+    CFShow(url);
     did_launch = LSOpenCFURLRef(url, NULL);
+    CFRelease(url);
     return did_launch;
 }
 

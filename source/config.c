@@ -14,13 +14,12 @@ void write_file(char *buffer) {
 }
 
 static void config_str(Window *window, char *buf, int buffsize) {
-    char *tmp = *(&buf);
-    snprintf(tmp + strlen(tmp), buffsize, "wid=%d\n", window->wid);
-    tmp += snprintf(tmp + strlen(tmp), buffsize, "space=%llu\n", current_space_for_window(window));
-    tmp += snprintf(tmp + strlen(tmp), buffsize, "pos.x=%f\n", window->position.x);
-    tmp += snprintf(tmp + strlen(tmp), buffsize, "pos.y=%f\n", window->position.y);
-    tmp += snprintf(tmp + strlen(tmp), buffsize, "size.width=%f\n", window->size.width);
-    tmp += snprintf(tmp + strlen(tmp), buffsize, "size.height=%f\n\n", window->size.height);
+    snprintf(buf + strlen(buf), buffsize, "wid=%d\n", window->wid);
+    buf += snprintf(buf + strlen(buf), buffsize, "space=%llu\n", current_space_for_window(window));
+    buf += snprintf(buf + strlen(buf), buffsize, "pos.x=%f\n", window->position.x);
+    buf += snprintf(buf + strlen(buf), buffsize, "pos.y=%f\n", window->position.y);
+    buf += snprintf(buf + strlen(buf), buffsize, "size.width=%f\n", window->size.width);
+    buf += snprintf(buf + strlen(buf), buffsize, "size.height=%f\n\n", window->size.height);
 }
 
 void snapshot() {
@@ -41,34 +40,81 @@ void snapshot() {
     write_file(buf);
 }
 
-static int resize(char **c, int size) {
-    int new_size = size * 2;
-    *c = realloc(*c, sizeof(char *) * new_size);
-    return new_size;
+static int app_count(char *buf) {
+    int i = 0;
+    int count = 0;
+
+    while (buf[i]) {
+        if (buf[i] == '[') {
+            count++;
+        }
+        i++;
+    }
+    return count;
 }
 
-static int parse_app(char *buf, int index, char **app) {
+static int parse_app(char *buf, int index, char *app) {
     int new_ind = index + 1;
-    int size = 25;
-    int cur_ind = 0;
-    *app = malloc(sizeof(char *) * size);
-    char *tmp = *app;
-    tmp[size - 1] = '\0';
+    int app_ind = 0;
 
     while (buf[new_ind] != ']') {
+        app[app_ind] = buf[new_ind];
+        app_ind++;
         new_ind++;
-        if (tmp[cur_ind] == '\0') {
-            size = resize(&tmp, size);
-            tmp[size - 1] = '\0';
-        }
-        tmp[cur_ind] = buf[new_ind];
     }
-    *app = tmp;
+    app[app_ind] = '\0';
     new_ind++;
     return new_ind;
 }
 
-void load_config() {
+// vscode inserts SOH (aka 1) at EOF
+bool is_valid_token(char c) {
+    if (c != '\0' && c != '\n' && c != 1) {
+        return true;
+    }
+    return false;
+}
+
+int parse_val(char *buf, int ind, char *val) {
+    int new_ind = ind + 1;
+    int val_ind = 0;
+
+    while (is_valid_token(buf[new_ind])) {
+        val[val_ind] = buf[new_ind];
+        val_ind++;
+        new_ind++;
+    }
+    val[val_ind] = '\0';
+    return new_ind;
+}
+
+int parse_key_name(char *buf, int ind, char *key) {
+    int new_ind = ind;
+    int i = 0;
+
+    while (is_valid_token(buf[new_ind]) && buf[new_ind] != '=') {
+        key[i] = buf[new_ind];
+        i++;
+        new_ind++;
+    }
+    key[i] = '\0';
+    return new_ind;
+}
+
+static void to_double_maybe(char *key, char *val, char *attr, double *app_val) {
+    if (strcmp(key, attr) == 0 && app_val > 0) {
+        *app_val = atof(val);
+    }
+}
+
+static void to_int_maybe(char *key, char *val, char *attr, int *app_val) {
+    if (strcmp(key, attr) == 0 && app_val > 0) {
+        *app_val = atoi(val);
+    }
+}
+
+int load_config(INI **ini) {
+    INI *tmp;
     const char *file = "config.ini";
     int fd = open(file, O_RDWR);
     struct stat info;
@@ -81,14 +127,35 @@ void load_config() {
         exit(1);
     }
 
-    char *app;
+    int num_apps = app_count(buf);
+    tmp = malloc(sizeof(INI) * num_apps);
     int i = 0;
+    int j = 0;
     while (buf[i] != '\0') {
+        INI app;
+        int key_len = 256;
+        char path[PATH_MAX];
         char token = buf[i];
+        char key[key_len];
+        char val[key_len];
         if (token == '[') {
-            i = parse_app(buf, i, &app);
-            printf("%s\n", app);
+            i = parse_app(buf, i, path);
+            memcpy(app.path, path, PATH_MAX);
+            j++;
+        }
+        if (is_valid_token(buf[i])) {
+            i = parse_key_name(buf, i, key);
+            i = parse_val(buf, i, val);
+            to_int_maybe(key, val, "wid", &app.wid);
+            to_int_maybe(key, val, "space", &app.space);
+            to_double_maybe(key, val, "pos.x", &app.position.x);
+            to_double_maybe(key, val, "pos.y", &app.position.y);
+            to_double_maybe(key, val, "size.width", &app.size.width);
+            to_double_maybe(key, val, "size.height", &app.size.height);
+            tmp[j - 1] = app;
         }
         i++;
     }
+    *ini = tmp;
+    return num_apps;
 }
