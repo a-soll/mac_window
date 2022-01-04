@@ -23,7 +23,7 @@ void release_application(void *application);
 bool application_is_hidden(Application *application);
 // returns index of the app
 int get_application_by_name(Application *a, const char *name, int length);
-OSStatus launch_application(CFURLRef url);
+OSStatus launch_application(char *path);
 Application *get_active_application();
 // returns wid of focused window
 uint32_t get_application_focused_window(Application *application);

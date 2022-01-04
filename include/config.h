@@ -4,9 +4,16 @@
 #include "base.h"
 #include "includes.h"
 
+typedef struct INI {
+    char path[PATH_MAX];
+    int wid;
+    int space;
+    CGPoint position;
+    CGSize size;
+} INI;
+
 void write_file(char *buffer);
-// void config_str(Window *window, char *buf);
 void snapshot();
-void load_config();
+int load_config(INI **ini);
 
 #endif /* CONFIG_H */
